@@ -1,0 +1,107 @@
+
+@layer vars, core, basics, page;
+
+@layer vars {
+	:root {
+		color-scheme: dark;
+		--link: cyan;
+		--prime: #CBFFC0;
+		--special: yellow;
+		--bg: #111;
+		--plate: #66ffb7;
+		--burger-size: 3em;
+		--drawer: #172040ab;
+
+		--shiny-angry: #f40;
+	}
+}
+
+@layer core {
+	* {
+		padding: 0;
+		margin: 0;
+		box-sizing: border-box;
+	}
+
+	::-webkit-scrollbar { width: 4px; }
+	::-webkit-scrollbar-track { background: transparent; }
+	::-webkit-scrollbar-thumb { background: #333; border-radius: 1em; }
+	::-webkit-scrollbar-thumb:hover { background: #444; }
+	* {
+		scrollbar-width: thin;
+		scrollbar-color: #333 transparent;
+	}
+
+	a {
+		color: var(--link);
+		text-decoration: none;
+
+		&:visited {
+			color: color-mix(in srgb, var(--link), purple 30%);
+		}
+
+		&:is(:hover, :focus-visible) {
+			color: color-mix(in srgb, var(--link), white 10%);
+			text-decoration: underline;
+		}
+
+		&:active {
+			color: color-mix(in srgb, var(--link), white 50%);
+		}
+	}
+}
+
+@layer basics {
+	html, body { height: 100%; }
+	html {
+		font-family: "Share Tech", sans-serif;
+		font-size: 12px;
+		color: var(--prime);
+		text-shadow: 0.1em 0.1em 0.2em #0008;
+		background: var(--bg);
+	}
+}
+
+@layer page {
+	body {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: clamp(0em, calc(5vw - 3em), 4em);
+	}
+
+	app-main {
+		width: 50em;
+		height: 80em;
+		max-width: 100%;
+		max-height: 100%;
+
+		section {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+
+			gap: 1em;
+			height: 100%;
+			padding: 1em;
+		}
+	}
+
+	.logo {
+		width: 12em;
+		max-width: 100%;
+		filter: drop-shadow(0.1em 0.1em 0.2em #0004);
+	}
+
+	h1 {
+		font-size: 3em;
+		font-weight: bold;
+		text-shadow: 0 0 0.5em color-mix(in lch, var(--prime), #fff4 80%);
+	}
+
+	p { font-size: 1.5em; }
+	.version { color: #fe0; }
+}
+
