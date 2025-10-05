@@ -8,10 +8,8 @@ import {Context} from "../context.js"
 import themeCss from "../theme.css.js"
 import {DashboardView} from "../pages/dashboard/view.js"
 
-export class AppMain extends (view.component(use => {
+export const prepAppMain = (context: Context) => view.component(use => {
 	use.css(themeCss, styleCss)
-
-	const context = use.once(() => new Context())
 	const drawerControl = use.once(() => new DrawerControl())
 
 	const router = use.once(() => new spa.Router({
@@ -54,5 +52,5 @@ export class AppMain extends (view.component(use => {
 			<main slot=plate>${router.render()}</main>
 		`)
 		.render()
-})) {}
+})
 

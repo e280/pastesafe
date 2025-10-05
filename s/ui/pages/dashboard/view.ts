@@ -20,6 +20,8 @@ export const DashboardView = view(use => (context: Context) => {
 
 		<div std-bubble>
 			<div>
+				${context.authlocal.views.AuthButton()}
+				${context.authlocal.views.AuthUser()}
 				hello world
 			</div>
 		</div>
