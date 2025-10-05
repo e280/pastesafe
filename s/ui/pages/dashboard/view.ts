@@ -1,6 +1,7 @@
 
 import {html} from "lit"
 import {view} from "@e280/sly"
+
 import styleCss from "./style.css.js"
 import themeCss from "../../theme.css.js"
 import {Context} from "../../context.js"
@@ -8,6 +9,13 @@ import {Context} from "../../context.js"
 export const DashboardView = view(use => (context: Context) => {
 	use.name("dashboard")
 	use.css(themeCss, styleCss)
+
+	const {auth} = context.authlocal
+	const {AuthButton, AuthUser} = context.authlocal.views
+
+	const pubkey = auth.login
+		? context.pubkeys.derive(auth.login.nametag.id)
+		: null
 
 	return html`
 		<div std-topper></div>
@@ -20,9 +28,9 @@ export const DashboardView = view(use => (context: Context) => {
 
 		<div std-bubble>
 			<div>
-				${context.authlocal.views.AuthButton()}
-				${context.authlocal.views.AuthUser()}
-				hello world
+				${AuthButton()}
+				${AuthUser()}
+				${pubkey}
 			</div>
 		</div>
 	`
