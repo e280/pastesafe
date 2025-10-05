@@ -1,6 +1,6 @@
 
-# 📜🫙 pastesafe
-> *send secrets in public.*
+# 🫙📜 pastesafe
+> *send secrets in public*
 
 ### 👉 https://pastesafe.org/ 👈
 - pastesafe is an app for encrypting text or files
