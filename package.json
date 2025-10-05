@@ -1,7 +1,7 @@
 {
 	"private": true,
 	"name": "@e280/pastesafe",
-	"version": "0.1.0-0",
+	"version": "0.1.0-1",
 	"description": "send secrets in public",
 	"license": "MIT",
 	"author": "Chase Moskal <chasemoskal@gmail.com>",
