@@ -100,6 +100,7 @@
 
 		> header {
 			display: flex;
+			flex-wrap: wrap;
 			border-bottom: var(--line);
 
 			.logo {
@@ -118,6 +119,7 @@
 			}
 
 			auth-widget {
+				max-width: 100%;
 				margin-left: auto;
 			}
 		}
