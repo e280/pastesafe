@@ -59,6 +59,11 @@
 		color: white;
 		border-radius: 0.5em;
 	}
+
+	[x-biglink] {
+		max-width: 100%;
+		word-break: break-all;
+	}
 }
 
 @layer page {

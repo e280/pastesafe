@@ -15,7 +15,7 @@
 		"count": "find s -path '*/_archive' -prune -o -name '*.ts' -exec wc -l {} +"
 	},
 	"dependencies": {
-		"@e280/authlocal": "^0.3.7",
+		"@e280/authlocal": "^0.3.8",
 		"@e280/sly": "^0.4.11",
 		"@e280/strata": "^0.5.6",
 		"@e280/stz": "^0.4.11",
