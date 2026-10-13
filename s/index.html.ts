@@ -24,15 +24,22 @@ export default template(import.meta.url, async orb => html`
 			})}
 		</head>
 		<body>
-			<app-main>
-				<header slot=header>
+			<div class=ground>
+				<header>
 					<img class=logo src="${orb.hashurl('./assets/jar.png')}" alt=""/>
-					<h1>pastesafe</h1>
-					<p>send secrets in public.</p>
-					<p class=version>v${orb.packageVersion()}</p>
-					<auth-widget>Sign-in with Authlocal</auth-widget>
+					<div class=stack>
+						<h1>pastesafe <small>v${orb.packageVersion()}</small></h1>
+						<p>send secrets in public.</p>
+					</div>
+					<auth-widget>sign-in</auth-widget>
 				</header>
-			</app-main>
+
+				<app-main></app-main>
+
+				<footer>
+					<p><a href="https://github.com/e280/pastesafe">github.com/e280/pastesafe</a></p>
+				</footer>
+			</div>
 		</body>
 	</html>
 `)

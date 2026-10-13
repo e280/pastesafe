@@ -1,11 +1,13 @@
 
-@layer vars, core, page;
+@layer vars, core, x, page;
 
 @layer vars {
 	:root {
 		--bg: #000;
 		--prime: #0f0;
+		--link: #0cf;
 		--text-shadow: 0.1em 0.1em 0.2em #0008;
+		--line: 2px solid #333;
 	}
 }
 
@@ -48,13 +50,24 @@
 	}
 }
 
+@layer x {
+	[x-button] {
+		display: inline-block;
+		width: max-content;
+		padding: 0.5em;
+		background: #666;
+		color: white;
+		border-radius: 0.5em;
+	}
+}
+
 @layer page {
 	html, body {
 		height: 100%;
 	}
 
 	html {
-		font-size: 12px;
+		font-size: 18px;
 		font-family: sans-serif;
 		color: var(--prime);
 		background: var(--bg);
@@ -67,15 +80,75 @@
 		align-items: center;
 	}
 
-	app-main {
-		width: 100%;
-		max-width: 50em;
-		background: #111;
-		padding: 1em;
+	.ground {
+		display: flex;
+		flex-direction: column;
 
-		.logo {
-			max-height: 16em;
+		width: 100%;
+		max-width: 40em;
+		gap: 0.5em;
+
+		> * {
+			display: block;
+			padding: 1em;
 		}
+
+		> header {
+			display: flex;
+			border-bottom: var(--line);
+
+			.logo {
+				max-height: 4em;
+			}
+
+			.stack {
+				display: flex;
+				flex-direction: column;
+				h1 {
+					small {
+						font-size: 0.5em;
+						opacity: 0.5;
+					}
+				}
+			}
+
+			auth-widget {
+				margin-left: auto;
+			}
+		}
+
+		> footer {
+			display: flex;
+			flex-direction: column;
+			align-items: end;
+			border-top: var(--line);
+		}
+	}
+
+	app-main {
+		footer {
+			margin-top: 1em;
+		}
+
+		textarea {
+			width: 100%;
+			min-height: 16em;
+			padding: 1em;
+		}
+
+		.authorbox {
+			margin-top: 0.5em;
+			display: flex;
+			flex-direction: column;
+			gap: 0.5em;
+		}
+	}
+
+	.homescreen {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1em;
 	}
 }
 

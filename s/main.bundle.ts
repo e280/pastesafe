@@ -2,7 +2,7 @@
 import {html} from "lit"
 import {base62, debounce, txt} from "@e280/stz"
 import {lightElement, lightView, register, router, useOnce, useSignal, watchHash} from "@e280/sly"
-import {address, addressEmoji, addressMoniker, Auth, decrypt, deriveSecret, deriveSharedSecret, encrypt, generateKeypair, hash, makeAuthWidget, signClaim, User, verifyClaim, verifyProof} from "@e280/authlocal"
+import {addressEmoji, addressMoniker, Auth, decrypt, deriveSecret, deriveSharedSecret, encrypt, generateKeypair, hash, makeAuthWidget, signClaim, User, verifyClaim, verifyProof} from "@e280/authlocal"
 
 const auth = new Auth()
 
@@ -43,9 +43,9 @@ function gatekeep<X>(requestedId: string | null, fn: (user: User) => X) {
 		? fn(user)
 		: html`
 			${requestedId
-				? html`<p>please login as ${addressEmoji(requestedId)} ${address(requestedId)}</p>`
+				? html`<p>please login as ${addressEmoji(requestedId)} ${addressMoniker(requestedId)}</p>`
 				: html`<p>okay please go ahead and login:</p>`}
-			<auth-widget>Sign in with Authlocal</auth-widget>
+			<auth-widget>sign-in</auth-widget>
 		`
 }
 
@@ -54,13 +54,37 @@ function errorprone<X>(probably: string, fn: () => X) {
 	catch (error) {
 		console.error(error)
 		return html`
-			<div>
-				<p>${probably}</p>
+			<p>${probably}</p>
+			<footer>
 				<p><a href="#/">let's go back home</a></p>
-			</div>
+			</footer>
 		`
 	}
 }
+
+const AuthorView = lightView((user: User, recipientUserId: string, recipientCryptId: string) => {
+	const $link = useSignal("")
+	const encrypt = useOnce(() => debounce(300, (message: string) => {
+		$link(encryptMessageLink(user, recipientUserId, recipientCryptId, message))
+	}))
+	const onTextInput = (event: InputEvent) => {
+		const textarea = event.currentTarget as HTMLTextAreaElement
+		encrypt(textarea.value)
+	}
+	const link = $link()
+	const short = link.slice(0, 70)
+	return html`
+		<div class=authorbox>
+			<textarea @input=${onTextInput} placeholder="enter your message here"></textarea>
+			${link.length
+				? html`
+					<p>now send this link to your buddy:</p>
+					<p class=link><a href="${link}">${short}...</a></p>
+				`
+				: null}
+		</div>
+	`
+})
 
 const AppMain = lightElement(() => {
 	const $hash = useOnce(watchHash)
@@ -68,10 +92,9 @@ const AppMain = lightElement(() => {
 
 		"": lightView(() => {
 			return html`
-				<slot name=header></slot>
-				<div>
-					<p><a href="#/send">i want to send a secret</a></p>
-					<p><a href="#/recv">i want to receive a secret</a></p>
+				<div class=homescreen>
+					<p><a x-button href="#/send">i want to send a secret</a></p>
+					<p><a x-button href="#/recv">i want to receive a secret</a></p>
 				</div>
 			`
 		}),
@@ -79,60 +102,39 @@ const AppMain = lightElement(() => {
 		"send": lightView(() => {
 			const recvLink = `${location.origin}/#/recv`
 			return html`
-				<slot name=header></slot>
-				<div>
-					<p>okay now you have to send this link to your buddy (then they do the next part):</p>
-					<p><a href="${recvLink}">${recvLink}</a></p>
-					<p><a href="#/">nevermind, i want to go back</a></p>
-				</div>
+				<p>okay now you have to send this link to your buddy (then they do the next part):</p>
+				<p><a href="${recvLink}">${recvLink}</a></p>
+				<footer>
+					<p><a href="#/">back to home</a></p>
+				</footer>
 			`
 		}),
 
 		"recv": lightView(() => {
 			return html`
-				<slot name=header></slot>
-				<div>
-					<p>(wip: recv)</p>
-					${gatekeep(null, user => {
-						const url = makeInviteLink(user)
-						const short = url.slice(0, 60)
-						return html`
-							<p>send this invite link to your buddy (then it's their turn):</p>
-							<p><a href="${url}">${short}...</a></p>
-						`
-					})}
-					<p><a href="#/">nevermind, i want to go back</a></p>
-				</div>
+				${gatekeep(null, user => {
+					const url = makeInviteLink(user)
+					const short = url.slice(0, 60)
+					return html`
+						<p>send this invite link to your buddy (then it's their turn):</p>
+						<p><a href="${url}">${short}...</a></p>
+					`
+				})}
+				<footer>
+					<p><a href="#/">back to home</a></p>
+				</footer>
 			`
 		}),
 
 		"invite/{moniker}/{proofToken}": lightView(({moniker, proofToken}) => {
-			const AuthorView = useOnce(() => lightView((user: User, recipientUserId: string, recipientCryptId: string) => {
-				const $link = useSignal("")
-				const encrypt = useOnce(() => debounce(300, (message: string) => {
-					$link(encryptMessageLink(user, recipientUserId, recipientCryptId, message))
-				}))
-				const onTextInput = (event: InputEvent) => {
-					const textarea = event.currentTarget as HTMLTextAreaElement
-					encrypt(textarea.value)
-				}
-				const link = $link()
-				const short = link.slice(0, 70)
-				return html`
-					<textarea @input=${onTextInput}></textarea>
-					<p><a href="${link}">${short}</a></p>
-				`
-			}))
-
 			return errorprone("bad invite", () => {
 				const proof = verify(moniker, proofToken)
 				return html`
-					<slot name=header></slot>
-					<div>
-						<p>sending to: ${address(proof.id)}</p>
-						${gatekeep(null, user => AuthorView(user, proof.id, proof.delegateId))}
-						<p><a href="#/">nevermind, i want to go back</a></p>
-					</div>
+					<p>sending to: ${addressEmoji(proof.id)} ${addressMoniker(proof.id)}</p>
+					${gatekeep(null, user => AuthorView(user, proof.id, proof.delegateId))}
+					<footer>
+						<p><a href="#/">back to home</a></p>
+					</footer>
 				`
 			})
 		}),
@@ -152,10 +154,9 @@ const AppMain = lightElement(() => {
 				const {keyId, recipientUserId, ciphertext} = <MessageClaim>claim
 
 				return html`
-					<slot name=header></slot>
-					<div>
-						<p>message is from: ${address(proof.id)}</p>
-						${gatekeep(recipientUserId, user => {
+					<p>message is from: ${addressEmoji(proof.id)} ${addressMoniker(proof.id)}</p>
+					${gatekeep(recipientUserId, user => {
+						if (user.id === recipientUserId) {
 							const shared = deriveSharedSecret(user.cryptSecret, keyId)
 							const key = deriveSecret(shared, hash("pastesafe/secret/v1"))
 							const cleartext = decrypt(key, base62.toBytes(ciphertext))
@@ -163,15 +164,25 @@ const AppMain = lightElement(() => {
 							return html`
 								<textarea readonly>${message}</textarea>
 							`
-						})}
-						<p><a href="#/">nevermind, i want to go back</a></p>
-					</div>
+						}
+						else {
+							return html`
+								<p>this message is not for you.</p>
+								<p>it's for ${addressEmoji(recipientUserId)} ${addressMoniker(recipientUserId)}</p>
+							`
+						}
+					})}
+					<p><a href="#/">back to homepage.</a></p>
 				`
 			})
 		}),
 	}))
 
-	return route($hash()) ?? html`<h2>404 not found.</h2>`
+	return html`
+		<div class=plate>
+			${route($hash()) ?? html`<h2>404 not found.</h2>`}
+		</div>
+	`
 })
 
 register({
