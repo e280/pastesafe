@@ -2,7 +2,7 @@
 import {html} from "lit"
 import {base62, debounce, txt} from "@e280/stz"
 import {lightElement, lightView, register, router, useOnce, useSignal, watchHash} from "@e280/sly"
-import {address, addressMoniker, Auth, decrypt, deriveSecret, deriveSharedSecret, encrypt, generateKeypair, hash, makeAuthWidget, signClaim, User, verifyClaim, verifyProof} from "@e280/authlocal"
+import {address, addressEmoji, addressMoniker, Auth, decrypt, deriveSecret, deriveSharedSecret, encrypt, generateKeypair, hash, makeAuthWidget, signClaim, User, verifyClaim, verifyProof} from "@e280/authlocal"
 
 const auth = new Auth()
 
@@ -24,25 +24,27 @@ function verify(moniker: string, proofToken: string) {
 	return proof
 }
 
-type MessageClaim = {keyId: string, ciphertext: string}
+type MessageClaim = {keyId: string, recipientUserId: string, ciphertext: string}
 
-function encryptMessageLink(user: User, recipientId: string, message: string) {
+function encryptMessageLink(user: User, recipientUserId: string, recipientCryptId: string, message: string) {
 	const ephemeral = generateKeypair()
-	const shared = deriveSharedSecret(ephemeral.secret, recipientId)
+	const shared = deriveSharedSecret(ephemeral.secret, recipientCryptId)
 	const key = deriveSecret(shared, hash("pastesafe/secret/v1"))
 	const ciphertext = base62(encrypt(key, txt.toBytes(message)))
-	const claimToken = signClaim(user.session.crypt, <MessageClaim>{keyId: ephemeral.id, ciphertext})
+	const claimToken = signClaim(user.session.crypt, <MessageClaim>{keyId: ephemeral.id, recipientUserId, ciphertext})
 	const moniker = addressMoniker(user.id)
 	const tidbit = ephemeral.id.slice(0, 8)
 	return `${location.origin}/#/secret/${moniker}/${tidbit}/${claimToken}`
 }
 
-function gatekeep<X>(fn: (user: User) => X) {
+function gatekeep<X>(requestedId: string | null, fn: (user: User) => X) {
 	const {user} = auth
 	return user
 		? fn(user)
 		: html`
-			<p>okay please go ahead and login:</p>
+			${requestedId
+				? html`<p>please login as ${addressEmoji(requestedId)} ${address(requestedId)}</p>`
+				: html`<p>okay please go ahead and login:</p>`}
 			<auth-widget>Sign in with Authlocal</auth-widget>
 		`
 }
@@ -91,7 +93,7 @@ const AppMain = lightElement(() => {
 				<slot name=header></slot>
 				<div>
 					<p>(wip: recv)</p>
-					${gatekeep(user => {
+					${gatekeep(null, user => {
 						const url = makeInviteLink(user)
 						const short = url.slice(0, 60)
 						return html`
@@ -105,10 +107,10 @@ const AppMain = lightElement(() => {
 		}),
 
 		"invite/{moniker}/{proofToken}": lightView(({moniker, proofToken}) => {
-			const AuthorView = useOnce(() => lightView((user: User, recipientId: string) => {
+			const AuthorView = useOnce(() => lightView((user: User, recipientUserId: string, recipientCryptId: string) => {
 				const $link = useSignal("")
 				const encrypt = useOnce(() => debounce(300, (message: string) => {
-					$link(encryptMessageLink(user, recipientId, message))
+					$link(encryptMessageLink(user, recipientUserId, recipientCryptId, message))
 				}))
 				const onTextInput = (event: InputEvent) => {
 					const textarea = event.currentTarget as HTMLTextAreaElement
@@ -128,7 +130,7 @@ const AppMain = lightElement(() => {
 					<slot name=header></slot>
 					<div>
 						<p>sending to: ${address(proof.id)}</p>
-						${gatekeep(user => AuthorView(user, proof.delegateId))}
+						${gatekeep(null, user => AuthorView(user, proof.id, proof.delegateId))}
 						<p><a href="#/">nevermind, i want to go back</a></p>
 					</div>
 				`
@@ -147,12 +149,13 @@ const AppMain = lightElement(() => {
 				if (moniker !== addressMoniker(proof.id))
 					throw new Error("bad moniker")
 
+				const {keyId, recipientUserId, ciphertext} = <MessageClaim>claim
+
 				return html`
 					<slot name=header></slot>
 					<div>
 						<p>message is from: ${address(proof.id)}</p>
-						${gatekeep(user => {
-							const {keyId, ciphertext} = <MessageClaim>claim
+						${gatekeep(recipientUserId, user => {
 							const shared = deriveSharedSecret(user.cryptSecret, keyId)
 							const key = deriveSecret(shared, hash("pastesafe/secret/v1"))
 							const cleartext = decrypt(key, base62.toBytes(ciphertext))
