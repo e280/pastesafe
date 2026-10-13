@@ -30,6 +30,7 @@ export default template(import.meta.url, async orb => html`
 					<h1>pastesafe</h1>
 					<p>send secrets in public.</p>
 					<p class=version>v${orb.packageVersion()}</p>
+					<auth-widget>Sign-in with Authlocal</auth-widget>
 				</section>
 			</app-main>
 		</body>
