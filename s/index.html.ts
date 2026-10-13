@@ -1,43 +1,38 @@
 
-import {ssg, html} from "@e280/scute"
+import {template, html, dataSvgEmoji, socialCard} from "@e280/scute"
 
-const title = "pastesafe"
-const domain = "pastesafe.org"
-const favicon = "/assets/jar.png"
-const description = "send secrets in public"
+export default template(import.meta.url, async orb => html`
+	<!doctype html>
+	<html>
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width,initial-scale=1"/>
+			<meta name="darkreader-lock"/>
+			<style>@layer base{html{background:#000}}</style>
 
-export default ssg.page(import.meta.url, async orb => ({
-	title,
-	js: "main.bundle.min.js",
-	css: "main.css",
-	dark: true,
+			<title>pastesafe</title>
+			<link rel="icon" href="${dataSvgEmoji("🫙")}"/>
+			<link rel="stylesheet" href="${orb.hashurl("main.css")}"/>
+			<script type="module" src="${orb.hashurl("main.bundle.min.js")}"></script>
 
-	socialCard: {
-		title,
-		description,
-		themeColor: "#0f0",
-		siteName: domain,
-		image: `https://${domain}${favicon}`,
-	},
-
-	head: html`
-		<link rel="icon" href="${favicon}">
-		<meta content="app-version" version="${orb.packageVersion()}"/>
-
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Share+Tech&display=swap" rel="stylesheet">
-	`,
-
-	body: html`
-		<app-main>
-			<section>
-				<img class=logo src="${favicon}" alt=""/>
-				<h1>pastesafe</h1>
-				<p>send secrets in public.</p>
-				<p class=version>v${orb.packageVersion()}</p>
-			</section>
-		</app-main>
-	`,
-}))
+			${socialCard({
+				themeColor: "#8FCC8F",
+				title: "pastesafe",
+				description: "send secrets in public",
+				siteName: "https://pastesafe.org/",
+				image: `https://pastesafe.org/assets/jar.png`,
+			})}
+		</head>
+		<body>
+			<app-main>
+				<section>
+					<img class=logo src="${orb.hashurl('./assets/jar.png')}" alt=""/>
+					<h1>pastesafe</h1>
+					<p>send secrets in public.</p>
+					<p class=version>v${orb.packageVersion()}</p>
+				</section>
+			</app-main>
+		</body>
+	</html>
+`)
 

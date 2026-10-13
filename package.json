@@ -6,45 +6,30 @@
 	"license": "MIT",
 	"author": "Chase Moskal <chasemoskal@gmail.com>",
 	"type": "module",
-	"main": "./x/index.js",
-	"sideEffects": false,
-	"exports": {
-		".": "./x/index.js"
-	},
-	"files": [
-		"x",
-		"s"
-	],
 	"scripts": {
-		"build": "run-s _clean _tsc _ln _scute",
-		"_clean": "rm -rf x",
-		"_tsc": "tsc",
-		"_scute": "scute -v",
-		"start": "octo 'scute -vw' 'tsc -w' 'node --watch x/tests.test.js' 'http-server x -c-1'",
-		"_ln": "run-s _ln-s _ln-assets",
-		"_ln-s": "ln -s \"$(realpath s)\" x/s",
-		"_ln-assets": "ln -s \"$(realpath assets)\" x/assets",
-		"test": "node x/tests.test.js",
-		"test-debug": "node inspect x/tests.test.js",
+		"start": "node x/server.js",
+		"link": "npm link ../web",
+		"build": "rm -rf x && mkdir x && tsc && scute -v",
+		"dev": "octo 'tsc -w' 'scute -wv' 'node --watch x/test.js' 'hottie x'",
+		"test": "node x/test.js",
 		"count": "find s -path '*/_archive' -prune -o -name '*.ts' -exec wc -l {} +"
 	},
 	"dependencies": {
-		"@e280/authlocal": "^0.2.0-37",
-		"@e280/kv": "^0.1.0",
-		"@e280/renraku": "^0.5.0",
-		"@e280/shiny": "^0.1.0-15",
-		"@e280/sly": "^0.2.0-31",
-		"@e280/strata": "^0.2.0",
-		"@e280/stz": "^0.2.10",
-		"@noble/curves": "^2.0.1",
-		"lit": "^3.3.1"
+		"@e280/authlocal": "^0.3.7",
+		"@e280/sly": "^0.4.11",
+		"@e280/strata": "^0.5.6",
+		"@e280/stz": "^0.4.11",
+		"lit": "^3.3.3"
 	},
 	"devDependencies": {
-		"@e280/science": "^0.1.2",
-		"@e280/scute": "^0.1.1",
-		"http-server": "^14.1.1",
-		"npm-run-all": "^4.1.5",
-		"typescript": "^5.9.3"
+		"@e280/hottie": "^0.1.7",
+		"@e280/octo": "^0.1.7",
+		"@e280/science": "^0.1.14",
+		"@e280/scute": "^0.5.3",
+		"typescript": "^7.0.2"
+	},
+	"allowScripts": {
+		"esbuild@0.28.2": true
 	},
 	"repository": {
 		"type": "git",
