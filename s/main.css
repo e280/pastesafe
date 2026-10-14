@@ -5,6 +5,8 @@
 	:root {
 		--bg: #000;
 		--prime: #0f0;
+		--version: #fff4;
+		--explain: #fff8;
 		--link: #0cf;
 		--text-shadow: 0.1em 0.1em 0.2em #0008;
 		--line: 2px solid #333;
@@ -90,32 +92,30 @@
 		flex-direction: column;
 
 		width: 100%;
-		max-width: 40em;
+		max-width: 50em;
 		gap: 0.5em;
+		padding: 1em;
 
 		> * {
 			display: block;
-			padding: 1em;
+			padding: 1em 0;
 		}
 
 		> header {
 			display: flex;
 			flex-wrap: wrap;
+			align-items: end;
 			border-bottom: var(--line);
+			gap: 1em;
 
 			.logo {
 				max-height: 4em;
 			}
 
-			.stack {
+			hgroup {
 				display: flex;
 				flex-direction: column;
-				h1 {
-					small {
-						font-size: 0.5em;
-						opacity: 0.5;
-					}
-				}
+				h2 { opacity: 0.6; }
 			}
 
 			auth-widget {
@@ -126,9 +126,24 @@
 
 		> footer {
 			display: flex;
-			flex-direction: column;
-			align-items: end;
+			flex-wrap: wrap;
 			border-top: var(--line);
+
+			> div {
+				flex: 1 0 10em;
+
+				display: flex;
+				flex-direction: column;
+				align-items: end;
+
+				.explain {
+					color: var(--explain);
+				}
+
+				.version {
+					color: var(--version);
+				}
+			}
 		}
 	}
 

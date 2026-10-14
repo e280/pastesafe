@@ -5,7 +5,7 @@ import {lightElement, lightView, register, router, useOnce, useSignal, watchHash
 import {addressEmoji, addressMoniker, Auth, decrypt, deriveSecret, deriveSharedSecret, encrypt, generateKeypair, hash, makeAuthWidget, signClaim, User, verifyClaim, verifyProof} from "@e280/authlocal"
 
 const auth = new Auth()
-const shortlen = 80
+const shortlen = 75
 const tidbitlen = 8
 
 function makeInviteLink(userId: string, proofToken: string) {
@@ -95,8 +95,8 @@ const AppMain = lightElement(() => {
 		"": lightView(() => {
 			return html`
 				<div class=homescreen>
-					<p><a x-button href="#/send">i want to send a secret</a></p>
-					<p><a x-button href="#/recv">i want to receive a secret</a></p>
+					<p><a x-button href="#/send">send a secret</a></p>
+					<p><a x-button href="#/recv">receive a secret</a></p>
 				</div>
 			`
 		}),

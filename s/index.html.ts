@@ -18,7 +18,7 @@ export default template(import.meta.url, async orb => html`
 			${socialCard({
 				themeColor: "#8FCC8F",
 				title: "pastesafe",
-				description: "send secrets in public",
+				description: "secrets in public",
 				siteName: "https://pastesafe.org/",
 				image: `https://pastesafe.org/assets/jar.png`,
 			})}
@@ -26,18 +26,23 @@ export default template(import.meta.url, async orb => html`
 		<body>
 			<div class=ground>
 				<header>
-					<img class=logo src="${orb.hashurl('./assets/jar.png')}" alt=""/>
-					<div class=stack>
-						<h1>pastesafe <small>v${orb.packageVersion()}</small></h1>
-						<p>send secrets in public.</p>
-					</div>
+					<hgroup>
+						<h1>pastesafe</h1>
+						<h2>secrets in public</h2>
+					</hgroup>
 					<auth-widget>sign-in</auth-widget>
 				</header>
 
 				<app-main></app-main>
 
 				<footer>
-					<p><a href="https://github.com/e280/pastesafe">github.com/e280/pastesafe</a></p>
+					<div>
+						<p class=explain>pastesafe encrypts secret messages into links that only the intended recipient can decrypt.</p>
+					</div>
+					<div>
+						<p><a href="https://github.com/e280/pastesafe">learn more on the github</a></p>
+						<p class=version>v${orb.packageVersion()}</p>
+					</div>
 				</footer>
 			</div>
 		</body>
