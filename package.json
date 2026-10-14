@@ -19,7 +19,9 @@
 		"@e280/sly": "^0.4.11",
 		"@e280/strata": "^0.5.6",
 		"@e280/stz": "^0.4.11",
-		"lit": "^3.3.3"
+		"lit": "^3.3.3",
+		"micromark": "^4.0.3",
+		"micromark-extension-gfm": "^3.0.0"
 	},
 	"devDependencies": {
 		"@e280/hottie": "^0.1.7",

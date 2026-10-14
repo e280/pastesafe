@@ -3,6 +3,8 @@ import {html} from "lit"
 import {base62, debounce, errorString, txt} from "@e280/stz"
 import {lightElement, lightView, register, router, useOnce, useSignal, watchHash} from "@e280/sly"
 import {addressEmoji, addressMoniker, Auth, decrypt, deriveSecret, deriveSharedSecret, encrypt, generateKeypair, hash, makeAuthWidget, signClaim, User, verifyClaim, verifyProof} from "@e280/authlocal"
+import { markdown } from "./utils/markdown.js"
+import { batch } from "@e280/strata"
 
 const auth = new Auth()
 const shortlen = 75
@@ -65,16 +67,26 @@ function errorprone<X>(fn: () => X) {
 }
 
 const AuthorView = lightView((user: User, recipientUserId: string, recipientCryptId: string) => {
+	const $preview = useSignal("")
 	const $link = useSignal("")
-	const encrypt = useOnce(() => debounce(300, (message: string) => {
-		$link(encryptMessageLink(user, recipientUserId, recipientCryptId, message))
+
+	const update = useOnce(() => debounce(300, (message: string) => {
+		batch(() => {
+			$preview("")
+			$link("")
+			$preview(markdown(message))
+			$link(encryptMessageLink(user, recipientUserId, recipientCryptId, message))
+		})
 	}))
+
 	const onTextInput = (event: InputEvent) => {
 		const textarea = event.currentTarget as HTMLTextAreaElement
-		encrypt(textarea.value)
+		update(textarea.value)
 	}
+
 	const link = $link()
 	const short = link.slice(0, shortlen)
+
 	return html`
 		<div class=authorbox>
 			<textarea @input=${onTextInput} placeholder="enter your secret message here"></textarea>
@@ -84,6 +96,7 @@ const AuthorView = lightView((user: User, recipientUserId: string, recipientCryp
 					<p class=link x-biglink><a href="${link}">${short}...</a></p>
 				`
 				: null}
+			<div class=markdown .innerHTML="${$preview()}"></div>
 		</div>
 	`
 })
