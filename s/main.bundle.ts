@@ -1,6 +1,6 @@
 
 import {html} from "lit"
-import {base62, debounce, txt} from "@e280/stz"
+import {base62, debounce, errorString, txt} from "@e280/stz"
 import {lightElement, lightView, register, router, useOnce, useSignal, watchHash} from "@e280/sly"
 import {addressEmoji, addressMoniker, Auth, decrypt, deriveSecret, deriveSharedSecret, encrypt, generateKeypair, hash, makeAuthWidget, signClaim, User, verifyClaim, verifyProof} from "@e280/authlocal"
 
@@ -10,7 +10,7 @@ const tidbitlen = 8
 
 function makeInviteLink(userId: string, proofToken: string) {
 	const moniker = addressMoniker(userId)
-	return `${location.origin}/#/invite/to/${moniker}/${proofToken}`
+	return `${location.origin}/#/0/invite/to/${moniker}/${proofToken}`
 }
 
 function verify(moniker: string, proofToken: string) {
@@ -36,7 +36,7 @@ function encryptMessageLink(user: User, recipientUserId: string, recipientCryptI
 	const claimToken = signClaim(user.session.crypt, <MessageClaim>{keyId: ephemeral.id, recipientUserId, ciphertext})
 	const from = addressMoniker(user.id)
 	const to = addressMoniker(recipientUserId)
-	return `${location.origin}/#/secret/from/${from}/to/${to}/${tidbit}/${claimToken}`
+	return `${location.origin}/#/0/secret/from/${from}/to/${to}/${tidbit}/${claimToken}`
 }
 
 function gatekeep<X>(requestedId: string | null, fn: (user: User) => X) {
@@ -51,12 +51,12 @@ function gatekeep<X>(requestedId: string | null, fn: (user: User) => X) {
 		`
 }
 
-function errorprone<X>(probably: string, fn: () => X) {
+function errorprone<X>(fn: () => X) {
 	try { return fn() }
 	catch (error) {
 		console.error(error)
 		return html`
-			<p>${probably}</p>
+			<h2 class=error>${errorString(error, "error")}</h2>
 			<footer>
 				<p><a href="#/">let's go back home</a></p>
 			</footer>
@@ -128,8 +128,9 @@ const AppMain = lightElement(() => {
 			`
 		}),
 
-		"invite/to/{moniker}/{proofToken}": lightView(({moniker, proofToken}) => {
-			return errorprone("bad invite", () => {
+		"{version}/invite/to/{moniker}/{proofToken}": lightView(({version, moniker, proofToken}) => {
+			return errorprone(() => {
+				if (version !== "0") throw new Error("unsupported version")
 				const proof = verify(moniker, proofToken)
 				return html`
 					<p>sending to: ${addressEmoji(proof.id)} ${addressMoniker(proof.id)}</p>
@@ -141,8 +142,9 @@ const AppMain = lightElement(() => {
 			})
 		}),
 
-		"secret/from/{from}/to/{to}/{tidbit}/{claimToken}": lightView(({to, from, claimToken}) => {
-			return errorprone("bad message", () => {
+		"{version}/secret/from/{from}/to/{to}/{tidbit}/{claimToken}": lightView(({version, to, from, claimToken}) => {
+			return errorprone(() => {
+				if (version !== "0") throw new Error("unsupported version")
 				const {proof, proofToken, claim: {keyId, recipientUserId, ciphertext}} =
 					verifyClaim<MessageClaim>(claimToken, {
 						allowedIssuers: [location.origin],
@@ -192,7 +194,12 @@ const AppMain = lightElement(() => {
 
 	return html`
 		<div class=plate>
-			${route($hash()) ?? html`<h2>404 not found.</h2>`}
+			${route($hash()) ?? html`
+				<h2 class=error>404 not found.</h2>
+				<footer>
+					<p><a href="#/">back to homepage.</a></p>
+				</footer>
+			`}
 		</div>
 	`
 })
