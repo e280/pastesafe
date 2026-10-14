@@ -8,7 +8,6 @@
 	"type": "module",
 	"scripts": {
 		"start": "node x/server.js",
-		"link": "npm link ../web",
 		"build": "rm -rf x && mkdir x && tsc && scute -v",
 		"dev": "octo 'tsc -w' 'scute -wv' 'node --watch x/test.js' 'hottie x'",
 		"test": "node x/test.js",
@@ -16,6 +15,7 @@
 	},
 	"dependencies": {
 		"@e280/authlocal": "^0.3.8",
+		"@e280/shiny": "^0.1.0",
 		"@e280/sly": "^0.4.11",
 		"@e280/strata": "^0.5.6",
 		"@e280/stz": "^0.4.11",

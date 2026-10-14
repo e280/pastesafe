@@ -1,10 +1,11 @@
 
 import {html} from "lit"
+import {batch} from "@e280/strata"
 import {base62, debounce, errorString, txt} from "@e280/stz"
-import {lightElement, lightView, register, router, useOnce, useSignal, watchHash} from "@e280/sly"
-import {addressEmoji, addressMoniker, Auth, decrypt, deriveSecret, deriveSharedSecret, encrypt, generateKeypair, hash, makeAuthWidget, signClaim, User, verifyClaim, verifyProof} from "@e280/authlocal"
-import { markdown } from "./utils/markdown.js"
-import { batch } from "@e280/strata"
+import {lightElement, lightView, register, router, shadowView, useOnce, useSignal, watchHash} from "@e280/sly"
+import {addressMoniker, Auth, Card, decrypt, deriveSecret, deriveSharedSecret, encrypt, generateKeypair, hash, makeAuthWidget, signClaim, User, verifyClaim, verifyProof} from "@e280/authlocal"
+import {markdown} from "./utils/markdown.js"
+import { ShinyCopy } from "@e280/shiny"
 
 const auth = new Auth()
 const shortlen = 75
@@ -47,7 +48,7 @@ function gatekeep<X>(requestedId: string | null, fn: (user: User) => X) {
 		? fn(user)
 		: html`
 			${requestedId
-				? html`<p>please login as ${addressEmoji(requestedId)} ${addressMoniker(requestedId)}</p>`
+				? html`<p>please login as ${Card({id: requestedId})}</p>`
 				: html`<p>okay please go ahead and login:</p>`}
 			<auth-widget>sign-in</auth-widget>
 		`
@@ -66,9 +67,19 @@ function errorprone<X>(fn: () => X) {
 	}
 }
 
+const JuicyLink = lightView((link: string) => {
+	return html`
+		<p x-juicylink>
+			<a href="${link}">${link.slice(0, shortlen)}...</a>
+			${ShinyCopy(link)}
+		</p>
+	`
+})
+
 const AuthorView = lightView((user: User, recipientUserId: string, recipientCryptId: string) => {
 	const $preview = useSignal("")
 	const $link = useSignal("")
+	const link = $link()
 
 	const update = useOnce(() => debounce(300, (message: string) => {
 		batch(() => {
@@ -84,18 +95,13 @@ const AuthorView = lightView((user: User, recipientUserId: string, recipientCryp
 		update(textarea.value)
 	}
 
-	const link = $link()
-	const short = link.slice(0, shortlen)
-
 	return html`
 		<div class=authorbox>
 			<textarea @input=${onTextInput} placeholder="enter your secret message here"></textarea>
-			${link.length
-				? html`
-					<p>now send this link to your buddy:</p>
-					<p class=link x-biglink><a href="${link}">${short}...</a></p>
-				`
-				: null}
+			${link.length ? html`
+				<p>now send this link to your buddy:</p>
+				${JuicyLink(link)}
+			` : null}
 			<div class=markdown .innerHTML="${$preview()}"></div>
 		</div>
 	`
@@ -108,8 +114,8 @@ const AppMain = lightElement(() => {
 		"": lightView(() => {
 			return html`
 				<div class=homescreen>
-					<p><a x-button href="#/send">send a secret</a></p>
-					<p><a x-button href="#/recv">receive a secret</a></p>
+					<p><a x-button href="#/send">i want to send a secret</a></p>
+					<p><a x-button href="#/recv">i want to receive a secret</a></p>
 				</div>
 			`
 		}),
@@ -118,7 +124,7 @@ const AppMain = lightElement(() => {
 			const recvLink = `${location.origin}/#/recv`
 			return html`
 				<p>okay now you have to send this link to your buddy (then they do the next part):</p>
-				<p x-biglink><a href="${recvLink}">${recvLink}</a></p>
+				${JuicyLink(recvLink)}
 				<footer>
 					<p><a href="#/">back to home</a></p>
 				</footer>
@@ -129,10 +135,9 @@ const AppMain = lightElement(() => {
 			return html`
 				${gatekeep(null, user => {
 					const url = makeInviteLink(user.id, user.session.crypt.proofToken)
-					const short = url.slice(0, shortlen)
 					return html`
 						<p>send this invite link to your buddy (then it's their turn):</p>
-						<p x-biglink><a href="${url}">${short}...</a></p>
+						${JuicyLink(url)}
 					`
 				})}
 				<footer>
@@ -146,8 +151,12 @@ const AppMain = lightElement(() => {
 				if (version !== "0") throw new Error("unsupported version")
 				const proof = verify(moniker, proofToken)
 				return html`
-					<p>sending to: ${addressEmoji(proof.id)} ${addressMoniker(proof.id)}</p>
+					<div class=mantle>
+						<h2>write your secret to ${Card({id: proof.id})}</h2>
+					</div>
+
 					${gatekeep(null, user => AuthorView(user, proof.id, proof.delegateId))}
+
 					<footer>
 						<p><a href="#/">back to home</a></p>
 					</footer>
@@ -173,29 +182,25 @@ const AppMain = lightElement(() => {
 					throw new Error("bad 'to' moniker")
 
 				return html`
-					<p>message is from: ${addressEmoji(proof.id)} ${addressMoniker(proof.id)}</p>
+					<p>message is from: ${Card({id: proof.id})}</p>
 					${gatekeep(recipientUserId, user => {
 						if (user.id === recipientUserId) {
 							const shared = deriveSharedSecret(user.cryptSecret, keyId)
 							const key = deriveSecret(shared, hash("pastesafe/secret/v1"))
 							const cleartext = decrypt(key, base62.toBytes(ciphertext))
 							const message = txt(cleartext)
-
 							const replyUrl = makeInviteLink(proof.id, proofToken)
-							const replyUrlShort = replyUrl.slice(0, shortlen)
-
 							return html`
 								<p>message decrypted:</p>
 								<textarea readonly>${message}</textarea>
-
 								<p>you can create a reply:</p>
-								<p x-biglink><a href="${replyUrl}">${replyUrlShort}...</a></p>
+								${JuicyLink(replyUrl)}
 							`
 						}
 						else {
 							return html`
 								<p>this message is not for you.</p>
-								<p>it's for ${addressEmoji(recipientUserId)} ${addressMoniker(recipientUserId)}</p>
+								<p>it's for ${Card({id: recipientUserId})}</p>
 							`
 						}
 					})}

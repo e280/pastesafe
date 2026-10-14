@@ -35,20 +35,20 @@
 	}
 
 	a {
+		opacity: 0.8;
 		color: var(--link);
 		text-decoration: none;
-
-		&:visited {
-			color: color-mix(in srgb, var(--link), purple 30%);
-		}
+		filter: brightness(100%);
+		&:visited { color: color-mix(in srgb, var(--link), purple 30%); }
 
 		&:is(:hover, :focus-visible) {
-			color: color-mix(in srgb, var(--link), white 10%);
+			opacity: 1;
+			filter: brightness(110%);
 			text-decoration: underline;
 		}
 
 		&:active {
-			color: color-mix(in srgb, var(--link), white 50%);
+			filter: brightness(90%);
 		}
 	}
 }
@@ -63,9 +63,28 @@
 		border-radius: 0.5em;
 	}
 
-	[x-biglink] {
+	[x-juicylink] {
+		display: flex;
+		align-items: center;
+		width: max-content;
 		max-width: 100%;
+		padding: 0.5em;
 		word-break: break-all;
+
+		color: color-mix(in oklch, var(--link), white 30%);
+		background: oklch(from var(--link) l c h / 15%);
+
+		border: 1px solid oklch(from var(--link) l c h / 20%);
+		border-radius: 0.5em;
+
+		a {
+			color: currentColor;
+		}
+
+		[view="shiny-copy"]::part(button) {
+			padding-left: 0.5em;
+			font-size: 1.5em;
+		}
 	}
 }
 
@@ -157,6 +176,15 @@
 			width: 100%;
 			min-height: 16em;
 			padding: 1em;
+		}
+
+		.mantle {
+			text-align: center;
+
+			[view="card"] {
+				font-size: 0.8em;
+				display: inline-block;
+			}
 		}
 
 		.authorbox {
