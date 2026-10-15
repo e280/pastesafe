@@ -5,6 +5,7 @@
 	:root {
 		--bg: #111;
 		--text: #fffe;
+		--textstrong: #fff;
 		--secret: #0f0;
 		--version: #fff4;
 		--explain: #fff8;
@@ -47,7 +48,7 @@
 		scrollbar-color: #333 transparent;
 	}
 
-	a {
+	:is(a, [x-button]) {
 		opacity: 0.8;
 		color: var(--link);
 		text-decoration: none;
@@ -74,6 +75,9 @@
 		background: #666;
 		color: white;
 		border-radius: 0.5em;
+		border: none;
+		font: inherit;
+		cursor: pointer;
 	}
 
 	[x-glowie], [x-juicylink] {
@@ -88,19 +92,21 @@
 	[x-juicylink] {
 		display: flex;
 		align-items: center;
-		width: max-content;
-		max-width: 100%;
+		width: 100%;
 		word-break: break-all;
 		color: var(--link);
 
 		a {
+			flex: 1 1 auto;
 			color: currentColor;
 			font-weight: bold;
 		}
 
-		[view="shiny-copy"]::part(button) {
-			padding-left: 0.5em;
-			font-size: 1.5em;
+		[view="shiny-copy"] {
+			&::part(button) {
+				padding-left: 0.5em;
+				font-size: 1.5em;
+			}
 		}
 	}
 }
@@ -156,8 +162,17 @@
 			hgroup {
 				display: flex;
 				flex-direction: column;
-				h1 > a { color: currentColor; }
-				h2 { opacity: 0.5; font-size: 1.3em; font-weight: normal; }
+
+				h1 > a {
+					color: var(--textstrong);
+					opacity: 1;
+				}
+
+				h2 {
+					opacity: 0.5;
+					font-size: 1.3em;
+					font-weight: normal;
+				}
 			}
 
 			auth-widget {

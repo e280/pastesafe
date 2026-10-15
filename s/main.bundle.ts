@@ -103,33 +103,29 @@ const AuthorView = lightView((user: User, recipientUserId: string, recipientCryp
 	const $link = useSignal("")
 	const $mdContent = useSignal("")
 
-	const updateText = useOnce(() => debounce(100, (message: string) => {
-		$text(message)
-	}))
-
-	const updateHeavy = useOnce(() => debounce(300, (message: string) => {
+	const updateHeavy = useOnce(() => debounce(300, (text: string) => {
 		batch(() => {
-			$mdContent(markdown(message))
-			$link(encryptMessageLink(user, recipientUserId, recipientCryptId, message))
+			$mdContent(markdown(text))
+			$link(encryptMessageLink(user, recipientUserId, recipientCryptId, text))
 		})
 	}))
 
 	const onTextInput = (event: InputEvent) => {
 		const textarea = event.currentTarget as HTMLTextAreaElement
-		const message = textarea.value
-		updateText(message)
-		updateHeavy(message)
+		const text = textarea.value
+		$text(text)
+		updateHeavy(text)
 	}
 
 	return html`
 		<div class="mantle authorbox">
 			<div class="mantle inputbox">
 				<h2>write a secret to ${Card({id: recipientUserId})}</h2>
-				<textarea x-glowie @input=${onTextInput} placeholder="enter your secret message here" max="${maxmessage}"></textarea>
+				<textarea x-glowie @input=${onTextInput} placeholder="enter your secret message here" maxlength="${maxmessage}"></textarea>
 				<p>markdown. limit ${$text().length}/${maxmessage}.</p>
 			</div>
 
-			${$link().length ? html`
+			${$text().length ? html`
 				<div class="mantle linkbox">
 					<h2>your secret is encrypted in this link:</h2>
 					${JuicyLink($link())}
@@ -221,7 +217,7 @@ const AppMain = lightElement(() => {
 
 				return html`
 					<div class="mantle secretrecv">
-						<h2>this secret is from ${Card({id: proof.id})}</h2>
+						<h2>secret from ${Card({id: proof.id})} to ${Card({id: recipientUserId})}</h2>
 						${gatekeep({
 							loggedIn: user => {
 								if (user.id === recipientUserId) {
@@ -239,12 +235,13 @@ const AppMain = lightElement(() => {
 								else {
 									return html`
 										<h2 class=error>you cannot decrypt this secret, it's not for you.</h2>
-										<p>it's actually for ${Card({id: recipientUserId})}</p>
+										<p>you're currently logged in as ${addressMoniker(user.id)}.</p>
+										<p><button x-button @click=${() => auth.logout()}>logout</button></p>
 									`
 								}
 							},
 							pleaseLogin: () => html`
-								<p>to decrypt it, please login as ${Card({id: recipientUserId})}</p>
+								<p>to decrypt it, please login as ${addressMoniker(recipientUserId)}.</p>
 							`,
 						})}
 					</div>
