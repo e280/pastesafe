@@ -43,16 +43,22 @@ function encryptMessageLink(user: User, recipientUserId: string, recipientCryptI
 	return `${location.origin}/#/secret/from/${from}/to/${to}/${tidbit}/0/${claimToken}`
 }
 
-function gatekeep<X>(requestedId: string | null, loggedIn: (user: User) => X, loggedOut = (): Content => {}) {
+function gatekeep<X>(options: {
+		pleaseLogin?: () => Content,
+		loggedIn: (user: User) => X,
+	}) {
+
 	const {user} = auth
+	const {
+		loggedIn,
+		pleaseLogin = () => html`<h2>please login:</h2>`,
+	} = options
+
 	return user
 		? loggedIn(user)
 		: html`
 			<div class=mantle>
-				${loggedOut()}
-				${requestedId
-					? html`<h2>you need to login as ${Card({id: requestedId})}</h2>`
-					: html`<h2>please login:</h2>`}
+				${pleaseLogin()}
 				<auth-widget>sign-in</auth-widget>
 			</div>
 		`
@@ -116,8 +122,9 @@ const AuthorView = lightView((user: User, recipientUserId: string, recipientCryp
 	}
 
 	return html`
-		<div class=authorbox>
+		<div class="mantle authorbox">
 			<div class="mantle inputbox">
+				<h2>write a secret to ${Card({id: recipientUserId})}</h2>
 				<textarea x-glowie @input=${onTextInput} placeholder="enter your secret message here" max="${maxmessage}"></textarea>
 				<p>markdown. limit ${$text().length}/${maxmessage}.</p>
 			</div>
@@ -163,30 +170,35 @@ const AppMain = lightElement(() => {
 		}),
 
 		"recv": lightView(() => {
-			return html`
-				${gatekeep(null, user => {
+			return gatekeep({
+				pleaseLogin: () => html`
+					<h2>please login, so you can make an invite link.</h2>
+					<p>then you'll be able to receive encrypted secrets.</p>
+				`,
+				loggedIn: user => {
 					const url = makeInviteLink(user.id, user.session.crypt.proofToken)
 					return html`
 						<div class=mantle>
-							<h2>send this invite link to the secret-giver:</h2>
+							<h2>send this invite link to the secret-giver.</h2>
 							${JuicyLink(url)}
 							<p>this link lets anyone encrypt secrets that only you can read.</p>
 						</div>
 					`
-				}, () => html`<h2>you've been asked to receive a secret.</h2>`)}
-			`
+				},
+			})
 		}),
 
 		"invite/to/{moniker}/{version}/{proofToken}": lightView(({version, moniker, proofToken}) => {
 			return errorprone(() => {
 				if (version !== "0") throw new Error("unsupported version")
 				const proof = verify(moniker, proofToken)
-				return html`
-					<div class=mantle>
-						<h2>write a secret to ${Card({id: proof.id})}</h2>
-					</div>
-					${gatekeep(null, user => AuthorView(user, proof.id, proof.delegateId))}
-				`
+				return gatekeep({
+					loggedIn: user => AuthorView(user, proof.id, proof.delegateId),
+					pleaseLogin: () => html`
+						<h2>${Card({id: proof.id})} is inviting you to write a secret.</h2>
+						<p>only they will be able to read it, but you need to login first.</p>
+					`,
+				})
 			})
 		}),
 
@@ -210,26 +222,30 @@ const AppMain = lightElement(() => {
 				return html`
 					<div class="mantle secretrecv">
 						<h2>this secret is from ${Card({id: proof.id})}</h2>
-
-						${gatekeep(recipientUserId, user => {
-							if (user.id === recipientUserId) {
-								const shared = deriveSharedSecret(user.cryptSecret, keyId)
-								const key = deriveSecret(shared, hash("pastesafe/secret/v1"))
-								const cleartext = decrypt(key, base62.toBytes(ciphertext))
-								const message = txt(cleartext)
-								const replyUrl = makeInviteLink(proof.id, proofToken)
-								return html`
-									${MarkdownView(message, markdown(message))}
-									<h2>you can make a reply at this link:</h2>
-									${JuicyLink(replyUrl)}
-								`
-							}
-							else {
-								return html`
-									<h2 class=error>this secret is not for you.</h2>
-									<p>it's actually for ${Card({id: recipientUserId})}</p>
-								`
-							}
+						${gatekeep({
+							loggedIn: user => {
+								if (user.id === recipientUserId) {
+									const shared = deriveSharedSecret(user.cryptSecret, keyId)
+									const key = deriveSecret(shared, hash("pastesafe/secret/v1"))
+									const cleartext = decrypt(key, base62.toBytes(ciphertext))
+									const message = txt(cleartext)
+									const replyUrl = makeInviteLink(proof.id, proofToken)
+									return html`
+										${MarkdownView(message, markdown(message))}
+										<h2>you can make a reply at this link:</h2>
+										${JuicyLink(replyUrl)}
+									`
+								}
+								else {
+									return html`
+										<h2 class=error>you cannot decrypt this secret, it's not for you.</h2>
+										<p>it's actually for ${Card({id: recipientUserId})}</p>
+									`
+								}
+							},
+							pleaseLogin: () => html`
+								<p>to decrypt it, please login as ${Card({id: recipientUserId})}</p>
+							`,
 						})}
 					</div>
 				`

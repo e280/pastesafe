@@ -21,7 +21,7 @@
 		--nib: 0.33em;
 		--nub: 0.67em;
 		--pad: 1em;
-		--space: 2em;
+		--space: 4em;
 		--round: 0.5rem;
 		--thick: 0.2em;
 	}
@@ -220,10 +220,11 @@
 		}
 
 		.authorbox {
-			margin-top: 0.5em;
-			display: flex;
-			flex-direction: column;
-			gap: 3em;
+			gap: var(--space);
+
+			> * {
+				width: 100%;
+			}
 		}
 
 		.inputbox {
