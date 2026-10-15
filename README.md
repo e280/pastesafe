@@ -1,15 +1,15 @@
 
-# 🤫 https://pastesafe.org/ — secrets in public.
+# 🤫 https://pastesafe.org/ secrets in public
 
 ***pastesafe turns private messages into public links that only intended recipients can decrypt.***
 
-occasionally, my dad and i need to exchange passwords or credit card numbers or whatever, and he's like *"should we email this or what?"* and i'm like *"i think it's supposed to be secure these days"* and he's like *"you don't sound confident"* and i'm like *"i'm not"* then i'm like *"we could use gpg"* and he's like *"use what?"* and i'm like *"nevermind"...*  
+occasionally, my dad and i need to exchange passwords or credit card numbers or whatever, and every time, he's like *"should we email this or what?"* then i'm like *"that's not exactly ideal"* and he's like *"okay so what's a good way?"* then i'm like *"well we could use gpg"* and he's like *"use what??"* then i'm like... *"nevermind"...*  
 so that's why i built pastesafe.
 
 📜→🫙
 
 ### pastesafe is local-first and user-sovereign.
-- **no database, no api.** pastesafe is a 100% static clientside app.
+- **no database, no api.** 100% static clientside app. secrets are in the links, literally.
 - **your device, your data.** encryption and decryption happen locally in your browser.
 - **open-source cryptography.** powered by [authlocal](https://github.com/e280/authlocal#readme) and [noble cryptography](https://paulmillr.com/noble/).
 - **hand-crafted.** with care. by a human being.
