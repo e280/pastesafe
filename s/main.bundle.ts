@@ -3,7 +3,7 @@ import {html} from "lit"
 import {batch} from "@e280/strata"
 import {ShinyCopy} from "@e280/shiny"
 import {base62, debounce, errorString, txt} from "@e280/stz"
-import {lightElement, lightView, register, router, useOnce, useSignal, watchHash} from "@e280/sly"
+import {Content, lightElement, lightView, register, router, useOnce, useSignal, watchHash} from "@e280/sly"
 import {addressMoniker, Auth, Card, decrypt, deriveSecret, deriveSharedSecret, encrypt, generateKeypair, hash, makeAuthWidget, signClaim, User, verifyClaim, verifyProof} from "@e280/authlocal"
 import {markdown} from "./utils/markdown.js"
 
@@ -43,12 +43,13 @@ function encryptMessageLink(user: User, recipientUserId: string, recipientCryptI
 	return `${location.origin}/#/secret/from/${from}/to/${to}/${tidbit}/0/${claimToken}`
 }
 
-function gatekeep<X>(requestedId: string | null, fn: (user: User) => X) {
+function gatekeep<X>(requestedId: string | null, loggedIn: (user: User) => X, loggedOut = (): Content => {}) {
 	const {user} = auth
 	return user
-		? fn(user)
+		? loggedIn(user)
 		: html`
 			<div class=mantle>
+				${loggedOut()}
 				${requestedId
 					? html`<h2>you need to login as ${Card({id: requestedId})}</h2>`
 					: html`<h2>please login:</h2>`}
@@ -154,9 +155,9 @@ const AppMain = lightElement(() => {
 			const url = `${location.origin}/#/recv`
 			return html`
 				<div class=mantle>
-					<h2>send this link to the secret receiver:</h2>
+					<h2>send this link to the secret-receiver:</h2>
 					${JuicyLink(url)}
-					<p>it'll prompt them to send an invite link back to you.</p>
+					<p>then they should send back an invite link.</p>
 				</div>
 			`
 		}),
@@ -167,12 +168,12 @@ const AppMain = lightElement(() => {
 					const url = makeInviteLink(user.id, user.session.crypt.proofToken)
 					return html`
 						<div class=mantle>
-							<h2>send this invite link:</h2>
+							<h2>send this invite link to the secret-giver:</h2>
 							${JuicyLink(url)}
 							<p>this link lets anyone encrypt secrets that only you can read.</p>
 						</div>
 					`
-				})}
+				}, () => html`<h2>you've been asked to receive a secret.</h2>`)}
 			`
 		}),
 
