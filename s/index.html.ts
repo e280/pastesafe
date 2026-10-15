@@ -12,7 +12,7 @@ export default template(import.meta.url, async orb => html`
 			<style>@layer base{html{background:#000}}</style>
 
 			<title>pastesafe</title>
-			<link rel="icon" href="${dataSvgEmoji("🫙")}"/>
+			<link rel="icon" href="${dataSvgEmoji("🤫")}"/>
 			<script type="module" src="${orb.hashurl("main.bundle.min.js")}"></script>
 
 			<style>${orb.inject("main.css")}</style>
@@ -28,10 +28,13 @@ export default template(import.meta.url, async orb => html`
 		<body>
 			<div class=ground>
 				<header>
-					<hgroup>
-						<h1><a href="#/">pastesafe</a></h1>
-						<h2>secrets in public</h2>
-					</hgroup>
+					<div class=titlezone>
+						<div class=logo>🤫</div>
+						<hgroup>
+							<h1><a href="#/">pastesafe</a></h1>
+							<h2>secrets in public</h2>
+						</hgroup>
+					</div>
 					<auth-widget no-alias>sign in</auth-widget>
 				</header>
 

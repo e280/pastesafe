@@ -1,5 +1,5 @@
 
-# https://pastesafe.org/ — secrets in public.
+# 🤫 https://pastesafe.org/ — secrets in public.
 
 ***pastesafe turns private messages into public links that only intended recipients can decrypt.***
 

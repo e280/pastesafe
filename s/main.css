@@ -167,23 +167,30 @@
 			border-bottom: var(--line);
 			gap: 1em;
 
-			.logo {
-				max-height: 4em;
-			}
-
-			hgroup {
+			.titlezone {
 				display: flex;
-				flex-direction: column;
+				flex-wrap: wrap;
+				align-items: center;
+				gap: var(--nib);
 
-				h1 > a {
-					color: var(--textstrong);
-					opacity: 1;
+				.logo {
+					font-size: 3em;
 				}
 
-				h2 {
-					opacity: 0.5;
-					font-size: 1.3em;
-					font-weight: normal;
+				hgroup {
+					display: flex;
+					flex-direction: column;
+
+					h1 > a {
+						color: var(--textstrong);
+						opacity: 1;
+					}
+
+					h2 {
+						opacity: 0.5;
+						font-size: 1.3em;
+						font-weight: normal;
+					}
 				}
 			}
 
