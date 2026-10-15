@@ -51,7 +51,7 @@ function gatekeep<X>(options: {
 	const {user} = auth
 	const {
 		loggedIn,
-		pleaseLogin = () => html`<h2>please login:</h2>`,
+		pleaseLogin = () => html`<h2>please sign-in:</h2>`,
 	} = options
 
 	return user
@@ -143,13 +143,12 @@ const AuthorView = lightView((user: User, recipientUserId: string, recipientCryp
 
 			${(text.length && link && md) ? html`
 				<div class="mantle linkbox">
-					<h2>your secret is encrypted in this link:</h2>
+					<h2>send this link to ${addressMoniker(recipientUserId)}</h2>
 					${JuicyLink(link)}
-					<p>send it to ${addressMoniker(recipientUserId)}, only they can decrypt it.</p>
 				</div>
 
 				<div class="mantle previewbox">
-					<h2>preview of what they'll see:</h2>
+					<h2>preview of what they'll see</h2>
 					${MarkdownView(text, md)}
 				</div>
 			` : null}
@@ -164,8 +163,8 @@ const AppMain = lightElement(() => {
 		"": lightView(() => {
 			return html`
 				<div class=homescreen>
-					<p><a x-button href="#/send">i want to send a secret</a></p>
-					<p><a x-button href="#/recv">i want to receive a secret</a></p>
+					<a class=recv x-button href="#/recv">i want to <strong>receive</strong> a secret</a>
+					<a class=send x-button href="#/send">i want to <strong>send</strong> a secret</a>
 				</div>
 			`
 		}),
@@ -174,9 +173,9 @@ const AppMain = lightElement(() => {
 			const url = `${location.origin}/#/recv`
 			return html`
 				<div class=mantle>
-					<h2>send this link to the secret-receiver:</h2>
+					<h2>send this link to your friend</h2>
 					${JuicyLink(url)}
-					<p>then they should send back an invite link.</p>
+					<p>they should send back an invite link</p>
 				</div>
 			`
 		}),
@@ -184,16 +183,16 @@ const AppMain = lightElement(() => {
 		"recv": lightView(() => {
 			return gatekeep({
 				pleaseLogin: () => html`
-					<h2>please login, so you can make an invite link.</h2>
-					<p>then you'll be able to receive encrypted secrets.</p>
+					<h2>please sign-in, so you can make an invite link</h2>
+					<p>then you'll be able to receive encrypted secrets</p>
 				`,
 				loggedIn: user => {
 					const url = makeInviteLink(user.id, user.session.crypt.proofToken)
 					return html`
 						<div class=mantle>
-							<h2>send this invite link to the secret-giver.</h2>
+							<h2>send this invite link to your friend</h2>
 							${JuicyLink(url)}
-							<p>this link lets anyone encrypt secrets that only you can read.</p>
+							<p>this link lets anyone encrypt secrets that only you can read</p>
 						</div>
 					`
 				},
@@ -207,8 +206,8 @@ const AppMain = lightElement(() => {
 				return gatekeep({
 					loggedIn: user => AuthorView(user, proof.id, proof.delegateId),
 					pleaseLogin: () => html`
-						<h2>${Card({id: proof.id})} is inviting you to write a secret.</h2>
-						<p>only they will be able to read it, but you need to login first.</p>
+						<h2>${Card({id: proof.id})} invites you to write them a secret</h2>
+						<p>only they will be able to read it, but you need to sign-in first</p>
 					`,
 				})
 			})
@@ -237,7 +236,7 @@ const AppMain = lightElement(() => {
 					pleaseLogin: () => html`
 						<div class=mantle>
 							${heading}
-							<p>to decrypt it, please login as ${addressMoniker(recipientUserId)}.</p>
+							<p>to decrypt it, please sign-in as ${addressMoniker(recipientUserId)}</p>
 						</div>
 					`,
 					loggedIn: user => {

@@ -13,16 +13,19 @@
 		--link: #0cf;
 		--code: #a0f;
 
+		--send: #3fb4ce;
+		--recv: slateblue;
+
 		--secretlite: color-mix(in oklch, var(--secret), white 50%);
 
 		--text-shadow: 0.1em 0.1em 0.2em #0008;
 		--box-shadow: 0.2em 0.6em 1em #0008;
-		--line: 2px solid #333;
+		--line: 2px solid #fff3;
 
 		--nib: 0.33em;
 		--nub: 0.67em;
 		--pad: 1em;
-		--space: 4em;
+		--space: 3em;
 		--round: 0.5rem;
 		--thick: 0.2em;
 	}
@@ -49,7 +52,7 @@
 	}
 
 	:is(a, [x-button]) {
-		opacity: 0.8;
+		opacity: 0.9;
 		color: var(--link);
 		text-decoration: none;
 		filter: brightness(100%);
@@ -71,13 +74,14 @@
 	[x-button] {
 		display: inline-block;
 		width: max-content;
-		padding: 0.5em;
+		padding: var(--nub);
 		background: #666;
 		color: white;
 		border-radius: 0.5em;
 		border: none;
 		font: inherit;
 		cursor: pointer;
+		font-weight: bold;
 	}
 
 	[x-glowie], [x-juicylink] {
@@ -208,7 +212,8 @@
 		.plate {
 			display: flex;
 			flex-direction: column;
-			gap: 1em;
+			gap: var(--pad);
+			padding: 2em 0;
 		}
 
 		footer {
@@ -347,6 +352,35 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 1em;
+
+		[x-button] {
+			display: block;
+			font-size: 1.3em;
+			font-weight: bold;
+			width: 100%;
+			max-width: 16em;
+			text-align: center;
+
+			&.send { --color: var(--send); }
+			&.recv { --color: var(--recv); }
+
+			color: white;
+			font-weight: normal;
+			text-decoration: none;
+
+			background: linear-gradient(
+				to bottom,
+				color-mix(in oklch, var(--color), white 20%),
+				color-mix(in oklch, var(--color), black 20%)
+			);
+
+			box-shadow: 0 0 3em color-mix(in oklch, transparent, var(--color) 75%);
+
+			> strong {
+				font-weight: bold;
+				text-decoration: underline;
+			}
+		}
 	}
 }
 
