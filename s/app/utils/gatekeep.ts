@@ -12,7 +12,7 @@ export function gatekeep<X>(options: {
 	const {
 		auth: {user},
 		loggedIn,
-		pleaseLogin = () => html`<h2>please sign-in:</h2>`,
+		pleaseLogin = () => html`<h2>please sign in:</h2>`,
 	} = options
 
 	return user
@@ -20,7 +20,7 @@ export function gatekeep<X>(options: {
 		: html`
 			<div class=mantle>
 				${pleaseLogin()}
-				<auth-widget no-alias>sign-in</auth-widget>
+				<auth-widget no-alias>sign in</auth-widget>
 			</div>
 		`
 }

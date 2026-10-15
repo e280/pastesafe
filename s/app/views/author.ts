@@ -11,7 +11,12 @@ import {MarkdownView} from "./markdown.js"
 import {renderMarkdown} from "../utils/render-markdown.js"
 import {encryptSecretLink} from "../utils/encrypt-secret-link.js"
 
-export const AuthorView = lightView((user: User, recipientUserId: string, recipientCryptId: string) => {
+export const AuthorView = lightView((
+		user: User,
+		recipientUserId: string,
+		recipientCryptId: string,
+	) => {
+
 	const $text = useSignal("")
 	const $link = useSignal<null | string>(null)
 	const $md = useSignal<null | ReturnType<typeof renderMarkdown>>(null)
@@ -44,7 +49,7 @@ export const AuthorView = lightView((user: User, recipientUserId: string, recipi
 					placeholder="enter your secret message here"
 					maxlength="${consts.maxmessage}"
 				></textarea>
-				<p>markdown. limit ${$text().length}/${consts.maxmessage}.</p>
+				<p>markdown. ${$text().length}/${consts.maxmessage}</p>
 			</div>
 
 			${(text.length && link && md) ? html`

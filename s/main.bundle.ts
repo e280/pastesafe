@@ -44,7 +44,7 @@ const AppMain = lightElement(() => {
 			return gatekeep({
 				auth,
 				pleaseLogin: () => html`
-					<h2>please sign-in, so you can make an invite link.</h2>
+					<h2>sign in to create your invite link.</h2>
 					<p>then you'll be able to receive encrypted secrets.</p>
 				`,
 				loggedIn: user => {
@@ -98,7 +98,7 @@ const AppMain = lightElement(() => {
 					pleaseLogin: () => html`
 						<div class=mantle>
 							${heading}
-							<p>to decrypt it, please sign-in as ${addressMoniker(recipientUserId)}.</p>
+							<p>sign in as ${addressMoniker(recipientUserId)} to decrypt it.</p>
 						</div>
 					`,
 					loggedIn: user => {
