@@ -8,6 +8,7 @@ pastesafe turns private messages into publicly-viewable links that only intended
 - **your device, your secrets.** encryption and decryption happen locally in your browser.
 - **no database, no api.** pastesafe is a 100% static clientside app. the data is in the links, nowhere else.
 - **open-source cryptography.** powered by [authlocal](https://github.com/e280/authlocal#readme) and [noble cryptography](https://paulmillr.com/noble/).
+- **hand-crafted.** with care by a human being.
 
 ### cypherpunk details.
 - *ed25519, x25519, xchacha20poly1305, blake3.*
