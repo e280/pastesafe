@@ -48,10 +48,12 @@ function gatekeep<X>(requestedId: string | null, fn: (user: User) => X) {
 	return user
 		? fn(user)
 		: html`
-			${requestedId
-				? html`<p>please login as ${Card({id: requestedId})}</p>`
-				: html`<p>okay please go ahead and login:</p>`}
-			<auth-widget>sign-in</auth-widget>
+			<div class=mantle>
+				${requestedId
+					? html`<h2>you need to login as ${Card({id: requestedId})}</h2>`
+					: html`<h2>please login:</h2>`}
+				<auth-widget>sign-in</auth-widget>
+			</div>
 		`
 }
 
@@ -80,10 +82,19 @@ const JuicyLink = lightView((link: string) => {
 	`
 })
 
+const MarkdownView = lightView((md: string, content: string) => {
+	return html`
+		<div class=markdown x-glowie>
+			<header>${ShinyCopy(md)}</header>
+			<div class=prose .innerHTML="${content}"></div>
+		</div>
+	`
+})
+
 const AuthorView = lightView((user: User, recipientUserId: string, recipientCryptId: string) => {
 	const $text = useSignal("")
 	const $link = useSignal("")
-	const $preview = useSignal("")
+	const $mdContent = useSignal("")
 
 	const updateText = useOnce(() => debounce(100, (message: string) => {
 		$text(message)
@@ -91,7 +102,7 @@ const AuthorView = lightView((user: User, recipientUserId: string, recipientCryp
 
 	const updateHeavy = useOnce(() => debounce(300, (message: string) => {
 		batch(() => {
-			$preview(markdown(message))
+			$mdContent(markdown(message))
 			$link(encryptMessageLink(user, recipientUserId, recipientCryptId, message))
 		})
 	}))
@@ -106,7 +117,6 @@ const AuthorView = lightView((user: User, recipientUserId: string, recipientCryp
 	return html`
 		<div class=authorbox>
 			<div class="mantle inputbox">
-				<h2>write your secret to ${Card({id: recipientUserId})}</h2>
 				<textarea x-glowie @input=${onTextInput} placeholder="enter your secret message here" max="${maxmessage}"></textarea>
 				<p>markdown. limit ${$text().length}/${maxmessage}.</p>
 			</div>
@@ -120,7 +130,7 @@ const AuthorView = lightView((user: User, recipientUserId: string, recipientCryp
 
 				<div class="mantle previewbox">
 					<h2>preview of what they'll see:</h2>
-					<div class="markdown prose" x-glowie .innerHTML="${$preview()}"></div>
+					${MarkdownView($text(), $mdContent())}
 				</div>
 			` : null}
 		</div>
@@ -170,7 +180,12 @@ const AppMain = lightElement(() => {
 			return errorprone(() => {
 				if (version !== "0") throw new Error("unsupported version")
 				const proof = verify(moniker, proofToken)
-				return gatekeep(null, user => AuthorView(user, proof.id, proof.delegateId))
+				return html`
+					<div class=mantle>
+						<h2>write a secret to ${Card({id: proof.id})}</h2>
+					</div>
+					${gatekeep(null, user => AuthorView(user, proof.id, proof.delegateId))}
+				`
 			})
 		}),
 
@@ -192,31 +207,30 @@ const AppMain = lightElement(() => {
 					throw new Error("bad 'to' moniker")
 
 				return html`
-					<div class=mantle>
-						<h2>secret is from ${Card({id: proof.id})}</h2>
-					</div>
-					${gatekeep(recipientUserId, user => {
-						if (user.id === recipientUserId) {
-							const shared = deriveSharedSecret(user.cryptSecret, keyId)
-							const key = deriveSecret(shared, hash("pastesafe/secret/v1"))
-							const cleartext = decrypt(key, base62.toBytes(ciphertext))
-							const message = txt(cleartext)
-							const replyUrl = makeInviteLink(proof.id, proofToken)
-							return html`
-								<div class="markdown prose" x-glowie .innerHTML="${markdown(message)}"></div>
-								<div class=mantle>
-									<h2>you can create a reply:</h2>
+					<div class="mantle secretrecv">
+						<h2>this secret is from ${Card({id: proof.id})}</h2>
+
+						${gatekeep(recipientUserId, user => {
+							if (user.id === recipientUserId) {
+								const shared = deriveSharedSecret(user.cryptSecret, keyId)
+								const key = deriveSecret(shared, hash("pastesafe/secret/v1"))
+								const cleartext = decrypt(key, base62.toBytes(ciphertext))
+								const message = txt(cleartext)
+								const replyUrl = makeInviteLink(proof.id, proofToken)
+								return html`
+									${MarkdownView(message, markdown(message))}
+									<h2>you can make a reply at this link:</h2>
 									${JuicyLink(replyUrl)}
-								</div>
-							`
-						}
-						else {
-							return html`
-								<p>this message is not for you.</p>
-								<p>it's for ${Card({id: recipientUserId})}</p>
-							`
-						}
-					})}
+								`
+							}
+							else {
+								return html`
+									<h2 class=error>this secret is not for you.</h2>
+									<p>it's actually for ${Card({id: recipientUserId})}</p>
+								`
+							}
+						})}
+					</div>
 				`
 			})
 		}),
