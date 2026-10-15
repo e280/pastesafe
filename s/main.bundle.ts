@@ -1,11 +1,11 @@
 
 import {html} from "lit"
 import {batch} from "@e280/strata"
+import {ShinyCopy} from "@e280/shiny"
 import {base62, debounce, errorString, txt} from "@e280/stz"
-import {lightElement, lightView, register, router, shadowView, useOnce, useSignal, watchHash} from "@e280/sly"
+import {lightElement, lightView, register, router, useOnce, useSignal, watchHash} from "@e280/sly"
 import {addressMoniker, Auth, Card, decrypt, deriveSecret, deriveSharedSecret, encrypt, generateKeypair, hash, makeAuthWidget, signClaim, User, verifyClaim, verifyProof} from "@e280/authlocal"
 import {markdown} from "./utils/markdown.js"
-import { ShinyCopy } from "@e280/shiny"
 
 const auth = new Auth()
 const shortlen = 75
@@ -13,7 +13,7 @@ const tidbitlen = 8
 
 function makeInviteLink(userId: string, proofToken: string) {
 	const moniker = addressMoniker(userId)
-	return `${location.origin}/#/0/invite/to/${moniker}/${proofToken}`
+	return `${location.origin}/#/invite/to/${moniker}/0/${proofToken}`
 }
 
 function verify(moniker: string, proofToken: string) {
@@ -39,7 +39,7 @@ function encryptMessageLink(user: User, recipientUserId: string, recipientCryptI
 	const claimToken = signClaim(user.session.crypt, <MessageClaim>{keyId: ephemeral.id, recipientUserId, ciphertext})
 	const from = addressMoniker(user.id)
 	const to = addressMoniker(recipientUserId)
-	return `${location.origin}/#/0/secret/from/${from}/to/${to}/${tidbit}/${claimToken}`
+	return `${location.origin}/#/secret/from/${from}/to/${to}/${tidbit}/0/${claimToken}`
 }
 
 function gatekeep<X>(requestedId: string | null, fn: (user: User) => X) {
@@ -68,9 +68,12 @@ function errorprone<X>(fn: () => X) {
 }
 
 const JuicyLink = lightView((link: string) => {
+	const short = link.length > shortlen
+		? link.slice(0, shortlen) + "..."
+		: link
 	return html`
 		<p x-juicylink>
-			<a href="${link}">${link.slice(0, shortlen)}...</a>
+			<a href="${link}">${short}</a>
 			${ShinyCopy(link)}
 		</p>
 	`
@@ -121,13 +124,13 @@ const AppMain = lightElement(() => {
 		}),
 
 		"send": lightView(() => {
-			const recvLink = `${location.origin}/#/recv`
+			const url = `${location.origin}/#/recv`
 			return html`
-				<p>okay now you have to send this link to your buddy (then they do the next part):</p>
-				${JuicyLink(recvLink)}
-				<footer>
-					<p><a href="#/">back to home</a></p>
-				</footer>
+				<div class=mantle>
+					<h2>send this link to the secret receiver:</h2>
+					${JuicyLink(url)}
+					<p>it'll prompt them to send an invite link back to you.</p>
+				</div>
 			`
 		}),
 
@@ -136,17 +139,17 @@ const AppMain = lightElement(() => {
 				${gatekeep(null, user => {
 					const url = makeInviteLink(user.id, user.session.crypt.proofToken)
 					return html`
-						<p>send this invite link to your buddy (then it's their turn):</p>
-						${JuicyLink(url)}
+						<div class=mantle>
+							<h2>send this invite link:</h2>
+							${JuicyLink(url)}
+							<p>this link lets anyone encrypt secrets that only you can read.</p>
+						</div>
 					`
 				})}
-				<footer>
-					<p><a href="#/">back to home</a></p>
-				</footer>
 			`
 		}),
 
-		"{version}/invite/to/{moniker}/{proofToken}": lightView(({version, moniker, proofToken}) => {
+		"invite/to/{moniker}/{version}/{proofToken}": lightView(({version, moniker, proofToken}) => {
 			return errorprone(() => {
 				if (version !== "0") throw new Error("unsupported version")
 				const proof = verify(moniker, proofToken)
@@ -156,15 +159,11 @@ const AppMain = lightElement(() => {
 					</div>
 
 					${gatekeep(null, user => AuthorView(user, proof.id, proof.delegateId))}
-
-					<footer>
-						<p><a href="#/">back to home</a></p>
-					</footer>
 				`
 			})
 		}),
 
-		"{version}/secret/from/{from}/to/{to}/{tidbit}/{claimToken}": lightView(({version, to, from, claimToken}) => {
+		"secret/from/{from}/to/{to}/{tidbit}/{version}/{claimToken}": lightView(({version, to, from, claimToken}) => {
 			return errorprone(() => {
 				if (version !== "0") throw new Error("unsupported version")
 				const {proof, proofToken, claim: {keyId, recipientUserId, ciphertext}} =
@@ -204,7 +203,6 @@ const AppMain = lightElement(() => {
 							`
 						}
 					})}
-					<p><a href="#/">back to homepage.</a></p>
 				`
 			})
 		}),
@@ -215,7 +213,7 @@ const AppMain = lightElement(() => {
 			${route($hash()) ?? html`
 				<h2 class=error>404 not found.</h2>
 				<footer>
-					<p><a href="#/">back to homepage.</a></p>
+					<p><a x-button href="#/">back to homepage.</a></p>
 				</footer>
 			`}
 		</div>

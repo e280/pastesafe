@@ -27,7 +27,7 @@ export default template(import.meta.url, async orb => html`
 			<div class=ground>
 				<header>
 					<hgroup>
-						<h1>pastesafe</h1>
+						<h1><a href="#/">pastesafe</a></h1>
 						<h2>secrets in public</h2>
 					</hgroup>
 					<auth-widget>sign-in</auth-widget>

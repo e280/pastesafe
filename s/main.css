@@ -3,7 +3,8 @@
 
 @layer vars {
 	:root {
-		--bg: #000;
+		--bg: #111;
+		--text: #fffe;
 		--prime: #0f0;
 		--version: #fff4;
 		--explain: #fff8;
@@ -96,7 +97,7 @@
 	html {
 		font-size: 18px;
 		font-family: sans-serif;
-		color: var(--prime);
+		color: var(--text);
 		background: var(--bg);
 		text-shadow: var(--text-shadow);
 	}
@@ -127,6 +128,7 @@
 			align-items: end;
 			border-bottom: var(--line);
 			gap: 1em;
+			color: var(--prime);
 
 			.logo {
 				max-height: 4em;
@@ -135,6 +137,7 @@
 			hgroup {
 				display: flex;
 				flex-direction: column;
+				h1 > a { color: currentColor; }
 				h2 { opacity: 0.6; }
 			}
 
@@ -168,8 +171,14 @@
 	}
 
 	app-main {
+		.plate {
+			display: flex;
+			flex-direction: column;
+			gap: 1em;
+		}
+
 		footer {
-			margin-top: 1em;
+			margin-top: 2em;
 		}
 
 		textarea {
@@ -179,7 +188,11 @@
 		}
 
 		.mantle {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
 			text-align: center;
+			gap: 1em;
 
 			[view="card"] {
 				font-size: 0.8em;
