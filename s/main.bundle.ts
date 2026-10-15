@@ -91,16 +91,14 @@ const JuicyLink = lightView((link: string) => {
 
 const MarkdownView = lightView((text: string, md: MarkdownReport) => {
 	return html`
-		<div class=markdown x-glowie>
-			<header>
-				<div>
-					${(md.linkCount || md.imageCount)
-						? html`<p class=note>(remember, opening links reveals your ip address)</p>`
-						: null}
-				</div>
-				${ShinyCopy(text)}
-			</header>
-			<div class=prose .innerHTML="${md.content}"></div>
+		<div class=markdown>
+			${(md.linkCount || md.imageCount)
+				? html`<p class=note>(remember, opening links reveals your ip address)</p>`
+				: null}
+			<div class=secret x-glowie>
+				<header>${ShinyCopy(text)}</header>
+				<div class=prose .innerHTML="${md.content}"></div>
+			</div>
 		</div>
 	`
 })
@@ -131,7 +129,7 @@ const AuthorView = lightView((user: User, recipientUserId: string, recipientCryp
 	return html`
 		<div class="mantle authorbox">
 			<div class="mantle inputbox">
-				<h2>write a secret to ${Card({id: recipientUserId})}</h2>
+				<h2>write a secret message to ${Card({id: recipientUserId})}</h2>
 				<textarea
 					x-glowie
 					@input=${onTextInput}
@@ -143,7 +141,7 @@ const AuthorView = lightView((user: User, recipientUserId: string, recipientCryp
 
 			${(text.length && link && md) ? html`
 				<div class="mantle linkbox">
-					<h2>send this link to ${addressMoniker(recipientUserId)}</h2>
+					<h2>copy and send this link to ${addressMoniker(recipientUserId)}</h2>
 					${JuicyLink(link)}
 				</div>
 
@@ -173,9 +171,9 @@ const AppMain = lightElement(() => {
 			const url = `${location.origin}/#/recv`
 			return html`
 				<div class=mantle>
-					<h2>send this link to your friend</h2>
+					<h2>send this link to your friend.</h2>
+					<p>then they should send an invite link back to you.</p>
 					${JuicyLink(url)}
-					<p>they should send back an invite link</p>
 				</div>
 			`
 		}),
@@ -183,16 +181,16 @@ const AppMain = lightElement(() => {
 		"recv": lightView(() => {
 			return gatekeep({
 				pleaseLogin: () => html`
-					<h2>please sign-in, so you can make an invite link</h2>
-					<p>then you'll be able to receive encrypted secrets</p>
+					<h2>please sign-in, so you can make an invite link.</h2>
+					<p>then you'll be able to receive encrypted secrets.</p>
 				`,
 				loggedIn: user => {
 					const url = makeInviteLink(user.id, user.session.crypt.proofToken)
 					return html`
 						<div class=mantle>
-							<h2>send this invite link to your friend</h2>
+							<h2>send this invite link to your friend.</h2>
+							<p>it lets anybody encrypt secrets that only you can read.</p>
 							${JuicyLink(url)}
-							<p>this link lets anyone encrypt secrets that only you can read</p>
 						</div>
 					`
 				},
@@ -206,8 +204,7 @@ const AppMain = lightElement(() => {
 				return gatekeep({
 					loggedIn: user => AuthorView(user, proof.id, proof.delegateId),
 					pleaseLogin: () => html`
-						<h2>${Card({id: proof.id})} invites you to write them a secret</h2>
-						<p>only they will be able to read it, but you need to sign-in first</p>
+						<h2>${Card({id: proof.id})} invites you to send a secret message.</h2>
 					`,
 				})
 			})
@@ -236,7 +233,7 @@ const AppMain = lightElement(() => {
 					pleaseLogin: () => html`
 						<div class=mantle>
 							${heading}
-							<p>to decrypt it, please sign-in as ${addressMoniker(recipientUserId)}</p>
+							<p>to decrypt it, please sign-in as ${addressMoniker(recipientUserId)}.</p>
 						</div>
 					`,
 					loggedIn: user => {
@@ -252,8 +249,7 @@ const AppMain = lightElement(() => {
 									${MarkdownView(message, markdown(message))}
 								</div>
 								<div class=mantle>
-									<h2>reply link:</h2>
-									${JuicyLink(replyUrl)}
+									<a x-button href="${replyUrl}">reply</a>
 								</div>
 							`
 						}

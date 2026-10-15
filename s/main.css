@@ -22,9 +22,9 @@
 		--box-shadow: 0.2em 0.6em 1em #0008;
 		--line: 2px solid #fff3;
 
-		--nib: 0.33em;
-		--nub: 0.67em;
-		--pad: 1em;
+		--nib: 0.25em;
+		--pad: 0.5em;
+		--gap: 1em;
 		--space: 3em;
 		--round: 0.5rem;
 		--thick: 0.2em;
@@ -74,7 +74,7 @@
 	[x-button] {
 		display: inline-block;
 		width: max-content;
-		padding: var(--nub);
+		padding: var(--pad);
 		background: #666;
 		color: white;
 		border-radius: 0.5em;
@@ -99,6 +99,7 @@
 		width: 100%;
 		word-break: break-all;
 		color: var(--link);
+		padding: var(--gap) var(--nib);
 
 		a {
 			flex: 1 1 auto;
@@ -108,7 +109,7 @@
 
 		[view="shiny-copy"] {
 			&::part(button) {
-				padding-left: 0.5em;
+				padding-left: var(--pad);
 				font-size: 1.5em;
 			}
 		}
@@ -144,7 +145,7 @@
 
 		width: 100%;
 		max-width: 50em;
-		gap: 0.5em;
+		gap: var(--pad);
 		padding: 1em;
 
 		> * {
@@ -212,7 +213,7 @@
 		.plate {
 			display: flex;
 			flex-direction: column;
-			gap: var(--pad);
+			gap: var(--gap);
 			padding: 2em 0;
 		}
 
@@ -232,7 +233,7 @@
 			flex-direction: column;
 			align-items: center;
 			text-align: center;
-			gap: var(--nub);
+			gap: var(--pad);
 
 			[view="card"] {
 				font-size: 1rem;
@@ -259,36 +260,42 @@
 		.markdown {
 			display: flex;
 			flex-direction: column;
-			gap: var(--nib);
-
-			color: var(--secret);
 			width: 100%;
-			text-align: start;
-			padding: var(--nib);
 
-			> header {
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
-				padding-bottom: var(--nib);
-
-				&:has(.note) {
-					border-bottom: 1px solid color-mix(in oklch, transparent, currentColor 20%);
-				}
-
-				.note {
-					color: var(--lowkey);
-					opacity: 0.8;
-					font-size: 0.8em;
-				}
-
-				[view="shiny-copy"] {
-					font-size: 1.5em;
-				}
+			.note {
+				align-self: start;
+				padding: 0 var(--pad);
+				font-family: serif;
+				color: var(--lowkey);
+				opacity: 0.8;
+				font-size: 0.8em;
 			}
 
-			> .prose {
-				padding: var(--pad);
+			.secret {
+				display: flex;
+				flex-direction: column;
+				gap: var(--nib);
+
+				text-align: start;
+				padding: var(--nib);
+
+				color: var(--secret);
+				width: 100%;
+
+				> header {
+					display: flex;
+					justify-content: end;
+					align-items: start;
+
+					[view="shiny-copy"] {
+						font-size: 1.5rem;
+					}
+				}
+
+				> .prose {
+					padding: var(--pad);
+					padding-top: 0;
+				}
 			}
 		}
 
@@ -314,7 +321,7 @@
 
 			blockquote {
 				color: oklch(from currentColor l 0 h / 50%);
-				padding-left: var(--nub);
+				padding-left: var(--pad);
 				margin-left: var(--nib);
 				font-style: italic;
 				border-left: var(--thick) solid currentColor;
