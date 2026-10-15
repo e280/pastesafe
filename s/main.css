@@ -11,7 +11,7 @@
 		--lowkey: #fff8;
 		--angry: #f00;
 		--link: #0cf;
-		--code: #a0f;
+		--code: #ff0;
 
 		--send: #3fb4ce;
 		--recv: slateblue;
@@ -40,6 +40,11 @@
 
 	:root {
 		color-scheme: dark;
+	}
+
+	::selection {
+		color: white;
+		background-color: #0f0;
 	}
 
 	::-webkit-scrollbar { width: 4px; }
@@ -123,6 +128,8 @@
 
 	html {
 		font-size: 18px;
+		tab-size: 4;
+
 		font-family: sans-serif;
 		color: var(--text);
 		background: var(--bg);
@@ -335,17 +342,24 @@
 				margin: var(--pad) 0;
 			}
 
-			code {
-				display: block;
-				width: 100%;
-				overflow: auto;
+			pre, p > code {
 				color: var(--code);
-
-				padding: 0.5em;
-				border: 0.2em solid color-mix(in oklch, transparent, currentColor 50%);
-				background: color-mix(in oklch, transparent, currentColor 20%);
+				background: color-mix(in oklch, #0004, currentColor 20%);
+				border: 0.2em solid color-mix(in oklch, transparent, currentColor 30%);
 				text-shadow: var(--text-shadow);
 				border-radius: 0.5rem;
+			}
+
+			pre {
+				display: block;
+				width: 100%;
+				padding: 0.5em;
+				overflow: auto;
+			}
+
+			p > code {
+				padding: var(--nib);
+				user-select: all;
 			}
 		}
 
