@@ -20,7 +20,7 @@ export function gatekeep<X>(options: {
 		: html`
 			<div class=mantle>
 				${pleaseLogin()}
-				<auth-widget>sign-in</auth-widget>
+				<auth-widget no-alias>sign-in</auth-widget>
 			</div>
 		`
 }
