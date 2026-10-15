@@ -13,8 +13,9 @@ export default template(import.meta.url, async orb => html`
 
 			<title>pastesafe</title>
 			<link rel="icon" href="${dataSvgEmoji("🫙")}"/>
-			<link rel="stylesheet" href="${orb.hashurl("main.css")}"/>
 			<script type="module" src="${orb.hashurl("main.bundle.min.js")}"></script>
+
+			<style>${orb.inject("main.css")}</style>
 
 			${socialCard({
 				themeColor: "#8FCC8F",
