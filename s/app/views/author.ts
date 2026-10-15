@@ -8,17 +8,17 @@ import {addressMoniker, Card, User} from "@e280/authlocal"
 import {consts} from "../consts.js"
 import {LinkView} from "./link.js"
 import {MarkdownView} from "./markdown.js"
-import {markdown} from "../utils/markdown.js"
+import {renderMarkdown} from "../utils/render-markdown.js"
 import {encryptSecretLink} from "../utils/encrypt-secret-link.js"
 
 export const AuthorView = lightView((user: User, recipientUserId: string, recipientCryptId: string) => {
 	const $text = useSignal("")
 	const $link = useSignal<null | string>(null)
-	const $md = useSignal<null | ReturnType<typeof markdown>>(null)
+	const $md = useSignal<null | ReturnType<typeof renderMarkdown>>(null)
 
 	const updateHeavy = useOnce(() => debounce(300, (text: string) => {
 		batch(() => {
-			$md(markdown(text))
+			$md(renderMarkdown(text))
 			$link(encryptSecretLink(user, recipientUserId, recipientCryptId, text))
 		})
 	}))

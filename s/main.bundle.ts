@@ -6,7 +6,7 @@ import {addressMoniker, Auth, Card, decrypt, deriveSecret, deriveSharedSecret, h
 
 import {MessageClaim} from "./app/types.js"
 import {LinkView} from "./app/views/link.js"
-import {markdown} from "./app/utils/markdown.js"
+import {renderMarkdown} from "./app/utils/render-markdown.js"
 import {gatekeep} from "./app/utils/gatekeep.js"
 import {AuthorView} from "./app/views/author.js"
 import {MarkdownView} from "./app/views/markdown.js"
@@ -111,7 +111,7 @@ const AppMain = lightElement(() => {
 							return html`
 								<div class="mantle display">
 									${heading}
-									${MarkdownView(message, markdown(message))}
+									${MarkdownView(message, renderMarkdown(message))}
 								</div>
 								<div class=mantle>
 									<a x-button href="${replyUrl}">reply</a>

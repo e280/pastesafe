@@ -1,9 +1,9 @@
 
 import {micromark} from "micromark"
 
-export type MarkdownReport = ReturnType<typeof markdown>
+export type MarkdownReport = ReturnType<typeof renderMarkdown>
 
-export function markdown(text: string) {
+export function renderMarkdown(text: string) {
 	const template = document.createElement("template")
 	template.innerHTML = micromark(text)
 

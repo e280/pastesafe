@@ -2,7 +2,7 @@
 import {html} from "lit"
 import {lightView} from "@e280/sly"
 import {ShinyCopy} from "@e280/shiny"
-import {MarkdownReport} from "../utils/markdown.js"
+import {MarkdownReport} from "../utils/render-markdown.js"
 
 export const MarkdownView = lightView((text: string, md: MarkdownReport) => {
 	return html`
