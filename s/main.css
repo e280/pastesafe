@@ -5,13 +5,25 @@
 	:root {
 		--bg: #111;
 		--text: #fffe;
-		--prime: #0f0;
+		--secret: #0f0;
 		--version: #fff4;
 		--explain: #fff8;
 		--angry: #f00;
 		--link: #0cf;
+		--code: #a0f;
+
+		--secretlite: color-mix(in oklch, var(--secret), white 50%);
+
 		--text-shadow: 0.1em 0.1em 0.2em #0008;
+		--box-shadow: 0.2em 0.6em 1em #0008;
 		--line: 2px solid #333;
+
+		--nib: 0.33em;
+		--nub: 0.67em;
+		--pad: 1em;
+		--space: 2em;
+		--round: 0.5rem;
+		--thick: 0.2em;
 	}
 }
 
@@ -64,22 +76,26 @@
 		border-radius: 0.5em;
 	}
 
+	[x-glowie], [x-juicylink] {
+		padding: 1em;
+		border: 0.2em solid color-mix(in oklch, transparent, currentColor 50%);
+		background: color-mix(in oklch, transparent, currentColor 10%);
+		box-shadow: 0 0 5em color-mix(in oklch, transparent, currentColor 30%);
+		border-radius: 0.5rem;
+		backdrop-filter: blur(1em);
+	}
+
 	[x-juicylink] {
 		display: flex;
 		align-items: center;
 		width: max-content;
 		max-width: 100%;
-		padding: 0.5em;
 		word-break: break-all;
-
-		color: color-mix(in oklch, var(--link), white 30%);
-		background: oklch(from var(--link) l c h / 15%);
-
-		border: 1px solid oklch(from var(--link) l c h / 20%);
-		border-radius: 0.5em;
+		color: var(--link);
 
 		a {
 			color: currentColor;
+			font-weight: bold;
 		}
 
 		[view="shiny-copy"]::part(button) {
@@ -100,6 +116,10 @@
 		color: var(--text);
 		background: var(--bg);
 		text-shadow: var(--text-shadow);
+
+		background:
+			radial-gradient(circle at center, #111c 30dvh, #111f),
+			url("/assets/neb.webp") center / cover;
 	}
 
 	body {
@@ -128,7 +148,6 @@
 			align-items: end;
 			border-bottom: var(--line);
 			gap: 1em;
-			color: var(--prime);
 
 			.logo {
 				max-height: 4em;
@@ -138,7 +157,7 @@
 				display: flex;
 				flex-direction: column;
 				h1 > a { color: currentColor; }
-				h2 { opacity: 0.6; }
+				h2 { opacity: 0.5; font-size: 1.3em; font-weight: normal; }
 			}
 
 			auth-widget {
@@ -192,10 +211,10 @@
 			flex-direction: column;
 			align-items: center;
 			text-align: center;
-			gap: 1em;
+			gap: 0.5em;
 
 			[view="card"] {
-				font-size: 0.8em;
+				font-size: 1rem;
 				display: inline-block;
 			}
 		}
@@ -204,7 +223,75 @@
 			margin-top: 0.5em;
 			display: flex;
 			flex-direction: column;
-			gap: 0.5em;
+			gap: 3em;
+		}
+
+		.inputbox {
+			textarea {
+				font-size: 1rem;
+				color: var(--secret);
+			}
+			p {
+				width: 100%;
+				opacity: 0.5;
+				text-align: right;
+			}
+		}
+
+		.markdown {
+			color: var(--secretlite);
+			width: 100%;
+			text-align: start;
+		}
+
+		.prose {
+			display: flex;
+			flex-direction: column;
+			gap: var(--pad);
+
+			p:has(> img) {
+				max-width: 100%;
+			}
+
+			ul, ol {
+				padding-left: 1.5em;
+			}
+
+			img {
+				max-width: 100%;
+				background: #0004;
+				border-radius: var(--round);
+				box-shadow: var(--box-shadow);
+			}
+
+			blockquote {
+				color: oklch(from currentColor l 0 h / 50%);
+				padding-left: var(--nub);
+				margin-left: var(--nib);
+				font-style: italic;
+				border-left: var(--thick) solid currentColor;
+			}
+
+			hr {
+				border: none;
+				display: block;
+				height: var(--thick);
+				background: oklch(from currentColor l c h / 25%);
+				margin: var(--space) 0;
+			}
+
+			code {
+				display: block;
+				width: 100%;
+				overflow: auto;
+				color: var(--code);
+
+				padding: 0.5em;
+				border: 0.2em solid color-mix(in oklch, transparent, currentColor 50%);
+				background: color-mix(in oklch, transparent, currentColor 20%);
+				text-shadow: var(--text-shadow);
+				border-radius: 0.5rem;
+			}
 		}
 
 		.error {

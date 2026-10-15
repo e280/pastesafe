@@ -10,6 +10,7 @@ import {markdown} from "./utils/markdown.js"
 const auth = new Auth()
 const shortlen = 75
 const tidbitlen = 8
+const maxmessage = 8000
 
 function makeInviteLink(userId: string, proofToken: string) {
 	const moniker = addressMoniker(userId)
@@ -80,14 +81,16 @@ const JuicyLink = lightView((link: string) => {
 })
 
 const AuthorView = lightView((user: User, recipientUserId: string, recipientCryptId: string) => {
-	const $preview = useSignal("")
+	const $text = useSignal("")
 	const $link = useSignal("")
-	const link = $link()
+	const $preview = useSignal("")
 
-	const update = useOnce(() => debounce(300, (message: string) => {
+	const updateText = useOnce(() => debounce(100, (message: string) => {
+		$text(message)
+	}))
+
+	const updateHeavy = useOnce(() => debounce(300, (message: string) => {
 		batch(() => {
-			$preview("")
-			$link("")
 			$preview(markdown(message))
 			$link(encryptMessageLink(user, recipientUserId, recipientCryptId, message))
 		})
@@ -95,17 +98,31 @@ const AuthorView = lightView((user: User, recipientUserId: string, recipientCryp
 
 	const onTextInput = (event: InputEvent) => {
 		const textarea = event.currentTarget as HTMLTextAreaElement
-		update(textarea.value)
+		const message = textarea.value
+		updateText(message)
+		updateHeavy(message)
 	}
 
 	return html`
 		<div class=authorbox>
-			<textarea @input=${onTextInput} placeholder="enter your secret message here"></textarea>
-			${link.length ? html`
-				<p>now send this link to your buddy:</p>
-				${JuicyLink(link)}
+			<div class="mantle inputbox">
+				<h2>write your secret to ${Card({id: recipientUserId})}</h2>
+				<textarea x-glowie @input=${onTextInput} placeholder="enter your secret message here" max="${maxmessage}"></textarea>
+				<p>markdown. limit ${$text().length}/${maxmessage}.</p>
+			</div>
+
+			${$link().length ? html`
+				<div class="mantle linkbox">
+					<h2>your secret is encrypted in this link:</h2>
+					${JuicyLink($link())}
+					<p>send it to ${addressMoniker(recipientUserId)}, only they can decrypt it.</p>
+				</div>
+
+				<div class="mantle previewbox">
+					<h2>preview of what they'll see:</h2>
+					<div class="markdown prose" x-glowie .innerHTML="${$preview()}"></div>
+				</div>
 			` : null}
-			<div class=markdown .innerHTML="${$preview()}"></div>
 		</div>
 	`
 })
@@ -153,13 +170,7 @@ const AppMain = lightElement(() => {
 			return errorprone(() => {
 				if (version !== "0") throw new Error("unsupported version")
 				const proof = verify(moniker, proofToken)
-				return html`
-					<div class=mantle>
-						<h2>write your secret to ${Card({id: proof.id})}</h2>
-					</div>
-
-					${gatekeep(null, user => AuthorView(user, proof.id, proof.delegateId))}
-				`
+				return gatekeep(null, user => AuthorView(user, proof.id, proof.delegateId))
 			})
 		}),
 
@@ -181,7 +192,9 @@ const AppMain = lightElement(() => {
 					throw new Error("bad 'to' moniker")
 
 				return html`
-					<p>message is from: ${Card({id: proof.id})}</p>
+					<div class=mantle>
+						<h2>secret is from ${Card({id: proof.id})}</h2>
+					</div>
 					${gatekeep(recipientUserId, user => {
 						if (user.id === recipientUserId) {
 							const shared = deriveSharedSecret(user.cryptSecret, keyId)
@@ -190,10 +203,11 @@ const AppMain = lightElement(() => {
 							const message = txt(cleartext)
 							const replyUrl = makeInviteLink(proof.id, proofToken)
 							return html`
-								<p>message decrypted:</p>
-								<textarea readonly>${message}</textarea>
-								<p>you can create a reply:</p>
-								${JuicyLink(replyUrl)}
+								<div class="markdown prose" x-glowie .innerHTML="${markdown(message)}"></div>
+								<div class=mantle>
+									<h2>you can create a reply:</h2>
+									${JuicyLink(replyUrl)}
+								</div>
 							`
 						}
 						else {
