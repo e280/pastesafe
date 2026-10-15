@@ -8,6 +8,7 @@ export default template(import.meta.url, async orb => html`
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width,initial-scale=1"/>
 			<meta name="darkreader-lock"/>
+			<meta http-equiv="x-dns-prefetch-control" content="off">
 			<style>@layer base{html{background:#000}}</style>
 
 			<title>pastesafe</title>
@@ -40,7 +41,7 @@ export default template(import.meta.url, async orb => html`
 						<p class=explain>pastesafe encrypts secret messages into links that only the intended recipient can decrypt.</p>
 					</div>
 					<div>
-						<p><a href="https://github.com/e280/pastesafe">learn more on the github</a></p>
+						<p><a href="https://github.com/e280/pastesafe">open-source on github</a></p>
 						<p class=version>v${orb.packageVersion()}</p>
 					</div>
 				</footer>

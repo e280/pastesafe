@@ -5,7 +5,7 @@ import {ShinyCopy} from "@e280/shiny"
 import {base62, debounce, errorString, txt} from "@e280/stz"
 import {Content, lightElement, lightView, register, router, useOnce, useSignal, watchHash} from "@e280/sly"
 import {addressMoniker, Auth, Card, decrypt, deriveSecret, deriveSharedSecret, encrypt, generateKeypair, hash, makeAuthWidget, signClaim, User, verifyClaim, verifyProof} from "@e280/authlocal"
-import {markdown} from "./utils/markdown.js"
+import {markdown, MarkdownReport} from "./utils/markdown.js"
 
 const auth = new Auth()
 const shortlen = 75
@@ -89,23 +89,30 @@ const JuicyLink = lightView((link: string) => {
 	`
 })
 
-const MarkdownView = lightView((md: string, content: string) => {
+const MarkdownView = lightView((text: string, md: MarkdownReport) => {
 	return html`
 		<div class=markdown x-glowie>
-			<header>${ShinyCopy(md)}</header>
-			<div class=prose .innerHTML="${content}"></div>
+			<header>
+				<div>
+					${(md.linkCount || md.imageCount)
+						? html`<p class=note>(remember, opening links reveals your ip address)</p>`
+						: null}
+				</div>
+				${ShinyCopy(text)}
+			</header>
+			<div class=prose .innerHTML="${md.content}"></div>
 		</div>
 	`
 })
 
 const AuthorView = lightView((user: User, recipientUserId: string, recipientCryptId: string) => {
 	const $text = useSignal("")
-	const $link = useSignal("")
-	const $mdContent = useSignal("")
+	const $link = useSignal<null | string>(null)
+	const $md = useSignal<null | ReturnType<typeof markdown>>(null)
 
 	const updateHeavy = useOnce(() => debounce(300, (text: string) => {
 		batch(() => {
-			$mdContent(markdown(text))
+			$md(markdown(text))
 			$link(encryptMessageLink(user, recipientUserId, recipientCryptId, text))
 		})
 	}))
@@ -117,24 +124,33 @@ const AuthorView = lightView((user: User, recipientUserId: string, recipientCryp
 		updateHeavy(text)
 	}
 
+	const text = $text()
+	const link = $link()
+	const md = $md()
+
 	return html`
 		<div class="mantle authorbox">
 			<div class="mantle inputbox">
 				<h2>write a secret to ${Card({id: recipientUserId})}</h2>
-				<textarea x-glowie @input=${onTextInput} placeholder="enter your secret message here" maxlength="${maxmessage}"></textarea>
+				<textarea
+					x-glowie
+					@input=${onTextInput}
+					placeholder="enter your secret message here"
+					maxlength="${maxmessage}"
+				></textarea>
 				<p>markdown. limit ${$text().length}/${maxmessage}.</p>
 			</div>
 
-			${$text().length ? html`
+			${(text.length && link && md) ? html`
 				<div class="mantle linkbox">
 					<h2>your secret is encrypted in this link:</h2>
-					${JuicyLink($link())}
+					${JuicyLink(link)}
 					<p>send it to ${addressMoniker(recipientUserId)}, only they can decrypt it.</p>
 				</div>
 
 				<div class="mantle previewbox">
 					<h2>preview of what they'll see:</h2>
-					${MarkdownView($text(), $mdContent())}
+					${MarkdownView(text, md)}
 				</div>
 			` : null}
 		</div>
@@ -215,35 +231,49 @@ const AppMain = lightElement(() => {
 				if (to !== addressMoniker(recipientUserId))
 					throw new Error("bad 'to' moniker")
 
+				const heading = html`<h2>secret from ${Card({id: proof.id})} to ${Card({id: recipientUserId})}</h2>`
+
+				const content = gatekeep({
+					pleaseLogin: () => html`
+						<div class=mantle>
+							${heading}
+							<p>to decrypt it, please login as ${addressMoniker(recipientUserId)}.</p>
+						</div>
+					`,
+					loggedIn: user => {
+						if (user.id === recipientUserId) {
+							const shared = deriveSharedSecret(user.cryptSecret, keyId)
+							const key = deriveSecret(shared, hash("pastesafe/secret/v1"))
+							const cleartext = decrypt(key, base62.toBytes(ciphertext))
+							const message = txt(cleartext)
+							const replyUrl = makeInviteLink(proof.id, proofToken)
+							return html`
+								<div class="mantle display">
+									${heading}
+									${MarkdownView(message, markdown(message))}
+								</div>
+								<div class=mantle>
+									<h2>reply link:</h2>
+									${JuicyLink(replyUrl)}
+								</div>
+							`
+						}
+						else {
+							return html`
+								<div class=mantle>
+									${heading}
+									<h2 class=error>you cannot decrypt this secret, it's not for you.</h2>
+									<p>you're currently logged in as ${addressMoniker(user.id)}.</p>
+									<p><button x-button @click=${() => auth.logout()}>logout</button></p>
+								</div>
+							`
+						}
+					},
+				})
+
 				return html`
-					<div class="mantle secretrecv">
-						<h2>secret from ${Card({id: proof.id})} to ${Card({id: recipientUserId})}</h2>
-						${gatekeep({
-							loggedIn: user => {
-								if (user.id === recipientUserId) {
-									const shared = deriveSharedSecret(user.cryptSecret, keyId)
-									const key = deriveSecret(shared, hash("pastesafe/secret/v1"))
-									const cleartext = decrypt(key, base62.toBytes(ciphertext))
-									const message = txt(cleartext)
-									const replyUrl = makeInviteLink(proof.id, proofToken)
-									return html`
-										${MarkdownView(message, markdown(message))}
-										<h2>you can make a reply at this link:</h2>
-										${JuicyLink(replyUrl)}
-									`
-								}
-								else {
-									return html`
-										<h2 class=error>you cannot decrypt this secret, it's not for you.</h2>
-										<p>you're currently logged in as ${addressMoniker(user.id)}.</p>
-										<p><button x-button @click=${() => auth.logout()}>logout</button></p>
-									`
-								}
-							},
-							pleaseLogin: () => html`
-								<p>to decrypt it, please login as ${addressMoniker(recipientUserId)}.</p>
-							`,
-						})}
+					<div class="mantle readerbox">
+						${content}
 					</div>
 				`
 			})

@@ -8,7 +8,7 @@
 		--textstrong: #fff;
 		--secret: #0f0;
 		--version: #fff4;
-		--explain: #fff8;
+		--lowkey: #fff8;
 		--angry: #f00;
 		--link: #0cf;
 		--code: #a0f;
@@ -194,7 +194,7 @@
 				align-items: end;
 
 				.explain {
-					color: var(--explain);
+					color: var(--lowkey);
 				}
 
 				.version {
@@ -222,6 +222,7 @@
 		}
 
 		.mantle {
+			width: 100%;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
@@ -234,12 +235,8 @@
 			}
 		}
 
-		.authorbox {
+		.authorbox, .readerbox {
 			gap: var(--space);
-
-			> * {
-				width: 100%;
-			}
 		}
 
 		.inputbox {
@@ -251,12 +248,6 @@
 				width: 100%;
 				opacity: 0.5;
 				text-align: right;
-			}
-		}
-
-		.secretrecv {
-			.markdown {
-				margin-bottom: var(--space);
 			}
 		}
 
@@ -272,13 +263,27 @@
 
 			> header {
 				display: flex;
-				justify-content: end;
-				font-size: 1.5em;
+				justify-content: space-between;
+				align-items: center;
+				padding-bottom: var(--nib);
+
+				&:has(.note) {
+					border-bottom: 1px solid color-mix(in oklch, transparent, currentColor 20%);
+				}
+
+				.note {
+					color: var(--lowkey);
+					opacity: 0.8;
+					font-size: 0.8em;
+				}
+
+				[view="shiny-copy"] {
+					font-size: 1.5em;
+				}
 			}
 
 			> .prose {
 				padding: var(--pad);
-				padding-top: 0;
 			}
 		}
 
